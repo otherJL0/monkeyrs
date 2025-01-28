@@ -1,6 +1,18 @@
 [package]
 name = "monkeyrs"
 version = "0.1.0"
+authors = ["Jonathan Lopez <jonathanglopez@gmail.com>"]
+description = "An implementation of the Monkey language in Rust"
+repository = "https://github.com/otherJL0/monkeyrs"
 edition = "2024"
+readme = "README.md"
+license = "MIT"
+keywords = ["monkey", "monkeylang"]
+categories = ["programming-languages"]
+
+[lints.clippy]
+cargo = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+style = { level = "warn", priority = -1 }
 
 [dependencies]
