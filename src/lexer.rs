@@ -51,7 +51,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_next_token() {
+    fn test_punctuation() {
         let expected_tokens = [
             token::Token::new(token::TokenType::Assign, "="),
             token::Token::new(token::TokenType::Plus, "+"),
@@ -65,6 +65,63 @@ mod test {
         ];
 
         let input = "=+(){},;";
+        let mut lexer = Lexer::new(input);
+        for expected_token in expected_tokens {
+            let token = lexer.next_token();
+            assert_eq!(token.token_type, expected_token.token_type);
+            assert_eq!(token.literal, expected_token.literal);
+        }
+    }
+
+    #[test]
+    fn test_simple_expression() {
+        let expected_tokens = [
+            token::Token::new(token::TokenType::Let, "let"),
+            token::Token::new(token::TokenType::Ident, "five"),
+            token::Token::new(token::TokenType::Assign, "="),
+            token::Token::new(token::TokenType::Int, "5"),
+            token::Token::new(token::TokenType::Semicolon, ";"),
+            token::Token::new(token::TokenType::Let, "let"),
+            token::Token::new(token::TokenType::Ident, "ten"),
+            token::Token::new(token::TokenType::Assign, "="),
+            token::Token::new(token::TokenType::Int, "10"),
+            token::Token::new(token::TokenType::Semicolon, ";"),
+            token::Token::new(token::TokenType::Let, "let"),
+            token::Token::new(token::TokenType::Ident, "add"),
+            token::Token::new(token::TokenType::Assign, "="),
+            token::Token::new(token::TokenType::Function, "fn"),
+            token::Token::new(token::TokenType::LeftParen, "("),
+            token::Token::new(token::TokenType::Ident, "x"),
+            token::Token::new(token::TokenType::Comma, ","),
+            token::Token::new(token::TokenType::Ident, "y"),
+            token::Token::new(token::TokenType::RightParen, ")"),
+            token::Token::new(token::TokenType::LeftBrace, "{"),
+            token::Token::new(token::TokenType::Ident, "x"),
+            token::Token::new(token::TokenType::Plus, "+"),
+            token::Token::new(token::TokenType::Ident, "y"),
+            token::Token::new(token::TokenType::Semicolon, ";"),
+            token::Token::new(token::TokenType::RightBrace, "}"),
+            token::Token::new(token::TokenType::Semicolon, ";"),
+            token::Token::new(token::TokenType::Let, "let"),
+            token::Token::new(token::TokenType::Ident, "result"),
+            token::Token::new(token::TokenType::Assign, "="),
+            token::Token::new(token::TokenType::Ident, "add"),
+            token::Token::new(token::TokenType::LeftParen, "("),
+            token::Token::new(token::TokenType::Ident, "five"),
+            token::Token::new(token::TokenType::Comma, ","),
+            token::Token::new(token::TokenType::Ident, "ten"),
+            token::Token::new(token::TokenType::RightParen, ")"),
+            token::Token::new(token::TokenType::Semicolon, ";"),
+            token::Token::new(token::TokenType::Eof, ""),
+        ];
+        let input = r"let five = 5;
+        let ten = 10;
+
+        let add = fn(x, y) {
+          x + y;
+        };
+        let result = add(five, ten);
+        ";
         let mut lexer = Lexer::new(input);
         for expected_token in expected_tokens {
             let token = lexer.next_token();
