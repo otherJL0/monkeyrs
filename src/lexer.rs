@@ -29,7 +29,32 @@ impl<'a> Lexer<'a> {
         self.read_position += 1;
     }
 
+    fn read_number(&mut self) -> token::Token {
+        let start = self.position;
+        while self.ch.is_ascii_digit() {
+            self.read_char();
+        }
+        let literal = &self.input[start..self.position];
+        token::Token::new(token::TokenType::Int, literal.to_string())
+    }
+    fn read_identifier(&mut self) -> token::Token {
+        let start = self.position;
+        while self.ch.is_ascii_alphabetic() {
+            self.read_char();
+        }
+        let literal = &self.input[start..self.position];
+        let token_type = match literal {
+            "fn" => token::TokenType::Function,
+            "let" => token::TokenType::Let,
+            _ => token::TokenType::Ident,
+        };
+        token::Token::new(token_type, String::from(literal))
+    }
+
     pub fn next_token(&mut self) -> token::Token {
+        while self.ch.is_whitespace() {
+            self.read_char();
+        }
         let token = match self.ch {
             '=' => token::Token::new(token::TokenType::Assign, String::from("=")),
             ';' => token::Token::new(token::TokenType::Semicolon, String::from(";")),
@@ -39,12 +64,15 @@ impl<'a> Lexer<'a> {
             '+' => token::Token::new(token::TokenType::Plus, String::from("+")),
             '{' => token::Token::new(token::TokenType::LeftBrace, String::from("{")),
             '}' => token::Token::new(token::TokenType::RightBrace, String::from("}")),
+            '\0' => token::Token::new(token::TokenType::Eof, String::default()),
             _ => {
                 if self.ch.is_ascii_alphabetic() {
-                    self.read_identifier()
-                } else {
-                    token::Token::new(token::TokenType::Illegal, String::default())
+                    return self.read_identifier();
                 }
+                if self.ch.is_ascii_digit() {
+                    return self.read_number();
+                }
+                return token::Token::new(token::TokenType::Illegal, String::from(self.ch));
             }
         };
         self.read_char();
@@ -73,9 +101,7 @@ mod test {
         let input = "=+(){},;";
         let mut lexer = Lexer::new(input);
         for expected_token in expected_tokens {
-            let token = lexer.next_token();
-            assert_eq!(token.token_type, expected_token.token_type);
-            assert_eq!(token.literal, expected_token.literal);
+            assert_eq!(lexer.next_token(), expected_token);
         }
     }
 
@@ -130,9 +156,8 @@ mod test {
         ";
         let mut lexer = Lexer::new(input);
         for expected_token in expected_tokens {
-            let token = lexer.next_token();
-            assert_eq!(token.token_type, expected_token.token_type);
-            assert_eq!(token.literal, expected_token.literal);
+            assert_eq!(lexer.next_token(), expected_token);
+            println!("Passed {expected_token:?}");
         }
     }
 }

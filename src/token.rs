@@ -25,6 +25,7 @@ pub enum TokenType {
     Let,
 }
 
+#[derive(Debug, PartialEq, PartialOrd, Eq, Ord)]
 pub struct Token {
     pub token_type: TokenType,
     pub literal: String,
