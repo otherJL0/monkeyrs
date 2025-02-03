@@ -50,39 +50,26 @@ impl<'a> Lexer<'a> {
 mod test {
     use super::*;
 
-    struct TestCase<'a> {
-        expected_type: token::TokenType,
-        expected_literal: &'a str,
-    }
-    impl<'a> TestCase<'a> {
-        pub fn new(expected_type: token::TokenType, expected_literal: &'a str) -> TestCase<'a> {
-            TestCase {
-                expected_type,
-                expected_literal,
-            }
-        }
-    }
-
     #[test]
     fn test_next_token() {
-        let test_cases = [
-            TestCase::new(token::TokenType::Assign, "="),
-            TestCase::new(token::TokenType::Plus, "+"),
-            TestCase::new(token::TokenType::LeftParen, "("),
-            TestCase::new(token::TokenType::RightParen, ")"),
-            TestCase::new(token::TokenType::LeftBrace, "{"),
-            TestCase::new(token::TokenType::RightBrace, "}"),
-            TestCase::new(token::TokenType::Comma, ","),
-            TestCase::new(token::TokenType::Semicolon, ";"),
-            TestCase::new(token::TokenType::Eof, ""),
+        let expected_tokens = [
+            token::Token::new(token::TokenType::Assign, "="),
+            token::Token::new(token::TokenType::Plus, "+"),
+            token::Token::new(token::TokenType::LeftParen, "("),
+            token::Token::new(token::TokenType::RightParen, ")"),
+            token::Token::new(token::TokenType::LeftBrace, "{"),
+            token::Token::new(token::TokenType::RightBrace, "}"),
+            token::Token::new(token::TokenType::Comma, ","),
+            token::Token::new(token::TokenType::Semicolon, ";"),
+            token::Token::new(token::TokenType::Eof, ""),
         ];
 
         let input = "=+(){},;";
         let mut lexer = Lexer::new(input);
-        for (i, tt) in test_cases.into_iter().enumerate() {
+        for expected_token in expected_tokens {
             let token = lexer.next_token();
-            assert_eq!(token.token_type, tt.expected_type);
-            assert_eq!(token.literal, tt.expected_literal);
+            assert_eq!(token.token_type, expected_token.token_type);
+            assert_eq!(token.literal, expected_token.literal);
         }
     }
 }
