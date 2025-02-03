@@ -31,15 +31,21 @@ impl<'a> Lexer<'a> {
 
     pub fn next_token(&mut self) -> token::Token {
         let token = match self.ch {
-            '=' => token::Token::new(token::TokenType::Assign, "="),
-            ';' => token::Token::new(token::TokenType::Semicolon, ";"),
-            '(' => token::Token::new(token::TokenType::LeftParen, "("),
-            ')' => token::Token::new(token::TokenType::RightParen, ")"),
-            ',' => token::Token::new(token::TokenType::Comma, ","),
-            '+' => token::Token::new(token::TokenType::Plus, "+"),
-            '{' => token::Token::new(token::TokenType::LeftBrace, "{"),
-            '}' => token::Token::new(token::TokenType::RightBrace, "}"),
-            _ => token::Token::new(token::TokenType::Eof, ""),
+            '=' => token::Token::new(token::TokenType::Assign, String::from("=")),
+            ';' => token::Token::new(token::TokenType::Semicolon, String::from(";")),
+            '(' => token::Token::new(token::TokenType::LeftParen, String::from("(")),
+            ')' => token::Token::new(token::TokenType::RightParen, String::from(")")),
+            ',' => token::Token::new(token::TokenType::Comma, String::from(",")),
+            '+' => token::Token::new(token::TokenType::Plus, String::from("+")),
+            '{' => token::Token::new(token::TokenType::LeftBrace, String::from("{")),
+            '}' => token::Token::new(token::TokenType::RightBrace, String::from("}")),
+            _ => {
+                if self.ch.is_ascii_alphabetic() {
+                    self.read_identifier()
+                } else {
+                    token::Token::new(token::TokenType::Illegal, String::default())
+                }
+            }
         };
         self.read_char();
         token
@@ -53,15 +59,15 @@ mod test {
     #[test]
     fn test_punctuation() {
         let expected_tokens = [
-            token::Token::new(token::TokenType::Assign, "="),
-            token::Token::new(token::TokenType::Plus, "+"),
-            token::Token::new(token::TokenType::LeftParen, "("),
-            token::Token::new(token::TokenType::RightParen, ")"),
-            token::Token::new(token::TokenType::LeftBrace, "{"),
-            token::Token::new(token::TokenType::RightBrace, "}"),
-            token::Token::new(token::TokenType::Comma, ","),
-            token::Token::new(token::TokenType::Semicolon, ";"),
-            token::Token::new(token::TokenType::Eof, ""),
+            token::Token::new(token::TokenType::Assign, String::from("=")),
+            token::Token::new(token::TokenType::Plus, String::from("+")),
+            token::Token::new(token::TokenType::LeftParen, String::from("(")),
+            token::Token::new(token::TokenType::RightParen, String::from(")")),
+            token::Token::new(token::TokenType::LeftBrace, String::from("{")),
+            token::Token::new(token::TokenType::RightBrace, String::from("}")),
+            token::Token::new(token::TokenType::Comma, String::from(",")),
+            token::Token::new(token::TokenType::Semicolon, String::from(";")),
+            token::Token::new(token::TokenType::Eof, String::from("")),
         ];
 
         let input = "=+(){},;";
@@ -76,43 +82,43 @@ mod test {
     #[test]
     fn test_simple_expression() {
         let expected_tokens = [
-            token::Token::new(token::TokenType::Let, "let"),
-            token::Token::new(token::TokenType::Ident, "five"),
-            token::Token::new(token::TokenType::Assign, "="),
-            token::Token::new(token::TokenType::Int, "5"),
-            token::Token::new(token::TokenType::Semicolon, ";"),
-            token::Token::new(token::TokenType::Let, "let"),
-            token::Token::new(token::TokenType::Ident, "ten"),
-            token::Token::new(token::TokenType::Assign, "="),
-            token::Token::new(token::TokenType::Int, "10"),
-            token::Token::new(token::TokenType::Semicolon, ";"),
-            token::Token::new(token::TokenType::Let, "let"),
-            token::Token::new(token::TokenType::Ident, "add"),
-            token::Token::new(token::TokenType::Assign, "="),
-            token::Token::new(token::TokenType::Function, "fn"),
-            token::Token::new(token::TokenType::LeftParen, "("),
-            token::Token::new(token::TokenType::Ident, "x"),
-            token::Token::new(token::TokenType::Comma, ","),
-            token::Token::new(token::TokenType::Ident, "y"),
-            token::Token::new(token::TokenType::RightParen, ")"),
-            token::Token::new(token::TokenType::LeftBrace, "{"),
-            token::Token::new(token::TokenType::Ident, "x"),
-            token::Token::new(token::TokenType::Plus, "+"),
-            token::Token::new(token::TokenType::Ident, "y"),
-            token::Token::new(token::TokenType::Semicolon, ";"),
-            token::Token::new(token::TokenType::RightBrace, "}"),
-            token::Token::new(token::TokenType::Semicolon, ";"),
-            token::Token::new(token::TokenType::Let, "let"),
-            token::Token::new(token::TokenType::Ident, "result"),
-            token::Token::new(token::TokenType::Assign, "="),
-            token::Token::new(token::TokenType::Ident, "add"),
-            token::Token::new(token::TokenType::LeftParen, "("),
-            token::Token::new(token::TokenType::Ident, "five"),
-            token::Token::new(token::TokenType::Comma, ","),
-            token::Token::new(token::TokenType::Ident, "ten"),
-            token::Token::new(token::TokenType::RightParen, ")"),
-            token::Token::new(token::TokenType::Semicolon, ";"),
-            token::Token::new(token::TokenType::Eof, ""),
+            token::Token::new(token::TokenType::Let, String::from("let")),
+            token::Token::new(token::TokenType::Ident, String::from("five")),
+            token::Token::new(token::TokenType::Assign, String::from("=")),
+            token::Token::new(token::TokenType::Int, String::from("5")),
+            token::Token::new(token::TokenType::Semicolon, String::from(";")),
+            token::Token::new(token::TokenType::Let, String::from("let")),
+            token::Token::new(token::TokenType::Ident, String::from("ten")),
+            token::Token::new(token::TokenType::Assign, String::from("=")),
+            token::Token::new(token::TokenType::Int, String::from("10")),
+            token::Token::new(token::TokenType::Semicolon, String::from(";")),
+            token::Token::new(token::TokenType::Let, String::from("let")),
+            token::Token::new(token::TokenType::Ident, String::from("add")),
+            token::Token::new(token::TokenType::Assign, String::from("=")),
+            token::Token::new(token::TokenType::Function, String::from("fn")),
+            token::Token::new(token::TokenType::LeftParen, String::from("(")),
+            token::Token::new(token::TokenType::Ident, String::from("x")),
+            token::Token::new(token::TokenType::Comma, String::from(",")),
+            token::Token::new(token::TokenType::Ident, String::from("y")),
+            token::Token::new(token::TokenType::RightParen, String::from(")")),
+            token::Token::new(token::TokenType::LeftBrace, String::from("{")),
+            token::Token::new(token::TokenType::Ident, String::from("x")),
+            token::Token::new(token::TokenType::Plus, String::from("+")),
+            token::Token::new(token::TokenType::Ident, String::from("y")),
+            token::Token::new(token::TokenType::Semicolon, String::from(";")),
+            token::Token::new(token::TokenType::RightBrace, String::from("}")),
+            token::Token::new(token::TokenType::Semicolon, String::from(";")),
+            token::Token::new(token::TokenType::Let, String::from("let")),
+            token::Token::new(token::TokenType::Ident, String::from("result")),
+            token::Token::new(token::TokenType::Assign, String::from("=")),
+            token::Token::new(token::TokenType::Ident, String::from("add")),
+            token::Token::new(token::TokenType::LeftParen, String::from("(")),
+            token::Token::new(token::TokenType::Ident, String::from("five")),
+            token::Token::new(token::TokenType::Comma, String::from(",")),
+            token::Token::new(token::TokenType::Ident, String::from("ten")),
+            token::Token::new(token::TokenType::RightParen, String::from(")")),
+            token::Token::new(token::TokenType::Semicolon, String::from(";")),
+            token::Token::new(token::TokenType::Eof, String::from("")),
         ];
         let input = r"let five = 5;
         let ten = 10;

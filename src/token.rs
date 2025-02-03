@@ -25,13 +25,13 @@ pub enum TokenType {
     Let,
 }
 
-pub struct Token<'a> {
+pub struct Token {
     pub token_type: TokenType,
-    pub literal: &'a str,
+    pub literal: String,
 }
 
-impl<'a> Token<'a> {
-    pub fn new(token_type: TokenType, literal: &'a str) -> Token<'a> {
+impl Token {
+    pub fn new(token_type: TokenType, literal: String) -> Token {
         Token {
             token_type,
             literal,
