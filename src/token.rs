@@ -14,6 +14,12 @@ pub enum TokenType {
     PlusEqual,
     MinusEqual,
 
+    Greater,
+    GreaterEqual,
+    Less,
+    LessEqual,
+    EqualEqual,
+
     // Delimiters
     Comma,
     Semicolon,
@@ -26,12 +32,8 @@ pub enum TokenType {
     // Keywords
     Function,
     Let,
-
-    Greater,
-    GreaterEqual,
-    Less,
-    LessEqual,
-    EqualEqual,
+    True,
+    False,
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord)]

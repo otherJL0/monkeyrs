@@ -50,6 +50,8 @@ impl<'a> Lexer<'a> {
         let token_type = match literal {
             "fn" => TokenType::Function,
             "let" => TokenType::Let,
+            "true" => TokenType::True,
+            "false" => TokenType::False,
             _ => TokenType::Identifier,
         };
         Token::new(token_type, String::from(literal))
@@ -222,6 +224,37 @@ mod test {
             Token::new(TokenType::Identifier, String::from("a")),
             Token::new(TokenType::MinusEqual, String::from("-=")),
             Token::new(TokenType::Int, String::from("5")),
+            Token::new(TokenType::Semicolon, String::from(";")),
+        ];
+        let mut lexer = Lexer::new(input);
+        for expected_token in expected_tokens {
+            assert_eq!(lexer.next_token(), expected_token);
+            println!("Passed {expected_token:?}");
+        }
+    }
+    #[test]
+    fn test_comparison() {
+        let input = r"let a = 10;
+        a >= 7 == true;
+        a <= 4 == false;
+        ";
+        let expected_tokens = [
+            Token::new(TokenType::Let, String::from("let")),
+            Token::new(TokenType::Identifier, String::from("a")),
+            Token::new(TokenType::Assign, String::from("=")),
+            Token::new(TokenType::Int, String::from("10")),
+            Token::new(TokenType::Semicolon, String::from(";")),
+            Token::new(TokenType::Identifier, String::from("a")),
+            Token::new(TokenType::GreaterEqual, String::from(">=")),
+            Token::new(TokenType::Int, String::from("7")),
+            Token::new(TokenType::EqualEqual, String::from("==")),
+            Token::new(TokenType::True, String::from("true")),
+            Token::new(TokenType::Semicolon, String::from(";")),
+            Token::new(TokenType::Identifier, String::from("a")),
+            Token::new(TokenType::LessEqual, String::from("<=")),
+            Token::new(TokenType::Int, String::from("4")),
+            Token::new(TokenType::EqualEqual, String::from("==")),
+            Token::new(TokenType::False, String::from("false")),
             Token::new(TokenType::Semicolon, String::from(";")),
         ];
         let mut lexer = Lexer::new(input);
