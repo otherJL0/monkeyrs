@@ -52,6 +52,9 @@ impl<'a> Lexer<'a> {
             "let" => TokenType::Let,
             "true" => TokenType::True,
             "false" => TokenType::False,
+            "if" => TokenType::If,
+            "else" => TokenType::Else,
+            "return" => TokenType::Return,
             _ => TokenType::Identifier,
         };
         Token::new(token_type, literal)
@@ -314,6 +317,53 @@ mod test {
             Token::new(TokenType::EqualEqual, "=="),
             Token::new(TokenType::False, "false"),
             Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::Eof, ""),
+        ];
+        let mut lexer = Lexer::new(input);
+        for expected_token in expected_tokens {
+            assert_eq!(lexer.next_token(), expected_token);
+            println!("Passed {expected_token:?}");
+        }
+    }
+
+    #[test]
+    fn test_conditionals() {
+        let input = r"
+        let num = rand(0, 10);
+        if (num > 8) {
+            return true;
+        } else {
+            return false;
+        }
+        ";
+        let expected_tokens = [
+            Token::new(TokenType::Let, "let"),
+            Token::new(TokenType::Identifier, "num"),
+            Token::new(TokenType::Assign, "="),
+            Token::new(TokenType::Identifier, "rand"),
+            Token::new(TokenType::LeftParen, "("),
+            Token::new(TokenType::Int, "0"),
+            Token::new(TokenType::Comma, ","),
+            Token::new(TokenType::Int, "10"),
+            Token::new(TokenType::RightParen, ")"),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::If, "if"),
+            Token::new(TokenType::LeftParen, "("),
+            Token::new(TokenType::Identifier, "num"),
+            Token::new(TokenType::Greater, ">"),
+            Token::new(TokenType::Int, "8"),
+            Token::new(TokenType::RightParen, ")"),
+            Token::new(TokenType::LeftBrace, "{"),
+            Token::new(TokenType::Return, "return"),
+            Token::new(TokenType::True, "true"),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::RightBrace, "}"),
+            Token::new(TokenType::Else, "else"),
+            Token::new(TokenType::LeftBrace, "{"),
+            Token::new(TokenType::Return, "return"),
+            Token::new(TokenType::False, "false"),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::RightBrace, "}"),
             Token::new(TokenType::Eof, ""),
         ];
         let mut lexer = Lexer::new(input);
