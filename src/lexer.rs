@@ -15,11 +15,15 @@ impl<'a> Lexer<'a> {
             read_position: 0,
             ch: char::default(),
         };
-        lexer.read_char();
+        lexer.advance();
         lexer
     }
 
-    pub fn read_char(&mut self) {
+    fn peek(&self) -> char {
+        self.input.chars().nth(self.read_position).unwrap()
+    }
+
+    pub fn advance(&mut self) {
         self.ch = if self.read_position >= self.input.len() {
             char::default()
         } else {
@@ -32,7 +36,7 @@ impl<'a> Lexer<'a> {
     fn read_number(&mut self) -> Token {
         let start = self.position;
         while self.ch.is_ascii_digit() {
-            self.read_char();
+            self.advance();
         }
         let literal = &self.input[start..self.position];
         Token::new(TokenType::Int, literal.to_string())
@@ -40,7 +44,7 @@ impl<'a> Lexer<'a> {
     fn read_identifier(&mut self) -> Token {
         let start = self.position;
         while self.ch.is_ascii_alphabetic() {
-            self.read_char();
+            self.advance();
         }
         let literal = &self.input[start..self.position];
         let token_type = match literal {
@@ -53,15 +57,53 @@ impl<'a> Lexer<'a> {
 
     pub fn next_token(&mut self) -> Token {
         while self.ch.is_whitespace() {
-            self.read_char();
+            self.advance();
         }
         let token = match self.ch {
-            '=' => Token::new(TokenType::Assign, String::from("=")),
+            '=' => {
+                if self.peek() == '=' {
+                    self.advance();
+                    Token::new(TokenType::EqualEqual, String::from("=="))
+                } else {
+                    Token::new(TokenType::Assign, String::from("="))
+                }
+            }
+            '<' => {
+                if self.peek() == '=' {
+                    self.advance();
+                    Token::new(TokenType::LessEqual, String::from("<="))
+                } else {
+                    Token::new(TokenType::Less, String::from("<"))
+                }
+            }
+            '>' => {
+                if self.peek() == '=' {
+                    self.advance();
+                    Token::new(TokenType::GreaterEqual, String::from(">="))
+                } else {
+                    Token::new(TokenType::Greater, String::from(">"))
+                }
+            }
+            '+' => {
+                if self.peek() == '=' {
+                    self.advance();
+                    Token::new(TokenType::PlusEqual, String::from("+="))
+                } else {
+                    Token::new(TokenType::Plus, String::from("+"))
+                }
+            }
+            '-' => {
+                if self.peek() == '=' {
+                    self.advance();
+                    Token::new(TokenType::MinusEqual, String::from("-="))
+                } else {
+                    Token::new(TokenType::Minus, String::from("-"))
+                }
+            }
             ';' => Token::new(TokenType::Semicolon, String::from(";")),
             '(' => Token::new(TokenType::LeftParen, String::from("(")),
             ')' => Token::new(TokenType::RightParen, String::from(")")),
             ',' => Token::new(TokenType::Comma, String::from(",")),
-            '+' => Token::new(TokenType::Plus, String::from("+")),
             '{' => Token::new(TokenType::LeftBrace, String::from("{")),
             '}' => Token::new(TokenType::RightBrace, String::from("}")),
             '\0' => Token::new(TokenType::Eof, String::default()),
@@ -75,7 +117,7 @@ impl<'a> Lexer<'a> {
                 return Token::new(TokenType::Illegal, String::from(self.ch));
             }
         };
-        self.read_char();
+        self.advance();
         token
     }
 }
@@ -106,7 +148,7 @@ mod test {
     }
 
     #[test]
-    fn test_simple_expression() {
+    fn test_simple_function() {
         let expected_tokens = [
             Token::new(TokenType::Let, String::from("let")),
             Token::new(TokenType::Ident, String::from("five")),
@@ -154,6 +196,34 @@ mod test {
         };
         let result = add(five, ten);
         ";
+        let mut lexer = Lexer::new(input);
+        for expected_token in expected_tokens {
+            assert_eq!(lexer.next_token(), expected_token);
+            println!("Passed {expected_token:?}");
+        }
+    }
+
+    #[test]
+    fn test_increment_decrement() {
+        let input = r"let a = 10;
+        a += 8;
+        a -= 5;
+        ";
+        let expected_tokens = [
+            Token::new(TokenType::Let, String::from("let")),
+            Token::new(TokenType::Ident, String::from("a")),
+            Token::new(TokenType::Assign, String::from("=")),
+            Token::new(TokenType::Int, String::from("10")),
+            Token::new(TokenType::Semicolon, String::from(";")),
+            Token::new(TokenType::Ident, String::from("a")),
+            Token::new(TokenType::PlusEqual, String::from("+=")),
+            Token::new(TokenType::Int, String::from("8")),
+            Token::new(TokenType::Semicolon, String::from(";")),
+            Token::new(TokenType::Ident, String::from("a")),
+            Token::new(TokenType::MinusEqual, String::from("-=")),
+            Token::new(TokenType::Int, String::from("5")),
+            Token::new(TokenType::Semicolon, String::from(";")),
+        ];
         let mut lexer = Lexer::new(input);
         for expected_token in expected_tokens {
             assert_eq!(lexer.next_token(), expected_token);
