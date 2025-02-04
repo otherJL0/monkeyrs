@@ -39,7 +39,7 @@ impl<'a> Lexer<'a> {
             self.advance();
         }
         let literal = &self.input[start..self.position];
-        Token::new(TokenType::Int, literal.to_string())
+        Token::new(TokenType::Int, literal)
     }
     fn read_identifier(&mut self) -> Token {
         let start = self.position;
@@ -54,7 +54,7 @@ impl<'a> Lexer<'a> {
             "false" => TokenType::False,
             _ => TokenType::Identifier,
         };
-        Token::new(token_type, String::from(literal))
+        Token::new(token_type, literal)
     }
 
     pub fn next_token(&mut self) -> Token {
@@ -65,50 +65,74 @@ impl<'a> Lexer<'a> {
             '=' => {
                 if self.peek() == '=' {
                     self.advance();
-                    Token::new(TokenType::EqualEqual, String::from("=="))
+                    Token::new(TokenType::EqualEqual, "==")
                 } else {
-                    Token::new(TokenType::Assign, String::from("="))
+                    Token::new(TokenType::Assign, "=")
                 }
             }
             '<' => {
                 if self.peek() == '=' {
                     self.advance();
-                    Token::new(TokenType::LessEqual, String::from("<="))
+                    Token::new(TokenType::LessEqual, "<=")
                 } else {
-                    Token::new(TokenType::Less, String::from("<"))
+                    Token::new(TokenType::Less, "<")
                 }
             }
             '>' => {
                 if self.peek() == '=' {
                     self.advance();
-                    Token::new(TokenType::GreaterEqual, String::from(">="))
+                    Token::new(TokenType::GreaterEqual, ">=")
                 } else {
-                    Token::new(TokenType::Greater, String::from(">"))
+                    Token::new(TokenType::Greater, ">")
                 }
             }
             '+' => {
                 if self.peek() == '=' {
                     self.advance();
-                    Token::new(TokenType::PlusEqual, String::from("+="))
+                    Token::new(TokenType::PlusEqual, "+=")
                 } else {
-                    Token::new(TokenType::Plus, String::from("+"))
+                    Token::new(TokenType::Plus, "+")
                 }
             }
             '-' => {
                 if self.peek() == '=' {
                     self.advance();
-                    Token::new(TokenType::MinusEqual, String::from("-="))
+                    Token::new(TokenType::MinusEqual, "-=")
                 } else {
-                    Token::new(TokenType::Minus, String::from("-"))
+                    Token::new(TokenType::Minus, "-")
                 }
             }
-            ';' => Token::new(TokenType::Semicolon, String::from(";")),
-            '(' => Token::new(TokenType::LeftParen, String::from("(")),
-            ')' => Token::new(TokenType::RightParen, String::from(")")),
-            ',' => Token::new(TokenType::Comma, String::from(",")),
-            '{' => Token::new(TokenType::LeftBrace, String::from("{")),
-            '}' => Token::new(TokenType::RightBrace, String::from("}")),
-            '\0' => Token::new(TokenType::Eof, String::default()),
+            '*' => {
+                if self.peek() == '=' {
+                    self.advance();
+                    Token::new(TokenType::AsteriskEqual, "*=")
+                } else {
+                    Token::new(TokenType::Asterisk, "(")
+                }
+            }
+            '/' => {
+                if self.peek() == '=' {
+                    self.advance();
+                    Token::new(TokenType::SlashEqual, "/=")
+                } else {
+                    Token::new(TokenType::Slash, "/")
+                }
+            }
+            '!' => {
+                if self.peek() == '=' {
+                    self.advance();
+                    Token::new(TokenType::BangEqual, "!=")
+                } else {
+                    Token::new(TokenType::Bang, "!")
+                }
+            }
+            ';' => Token::new(TokenType::Semicolon, ";"),
+            '(' => Token::new(TokenType::LeftParen, "("),
+            ')' => Token::new(TokenType::RightParen, ")"),
+            ',' => Token::new(TokenType::Comma, ","),
+            '{' => Token::new(TokenType::LeftBrace, "{"),
+            '}' => Token::new(TokenType::RightBrace, "}"),
+            '\0' => Token::new(TokenType::Eof, ""),
             _ => {
                 if self.ch.is_ascii_alphabetic() {
                     return self.read_identifier();
@@ -116,7 +140,10 @@ impl<'a> Lexer<'a> {
                 if self.ch.is_ascii_digit() {
                     return self.read_number();
                 }
-                return Token::new(TokenType::Illegal, String::from(self.ch));
+                return Token::new(
+                    TokenType::Illegal,
+                    std::str::from_utf8(&[self.ch as u8]).unwrap(),
+                );
             }
         };
         self.advance();
@@ -131,15 +158,15 @@ mod test {
     #[test]
     fn test_punctuation() {
         let expected_tokens = [
-            Token::new(TokenType::Assign, String::from("=")),
-            Token::new(TokenType::Plus, String::from("+")),
-            Token::new(TokenType::LeftParen, String::from("(")),
-            Token::new(TokenType::RightParen, String::from(")")),
-            Token::new(TokenType::LeftBrace, String::from("{")),
-            Token::new(TokenType::RightBrace, String::from("}")),
-            Token::new(TokenType::Comma, String::from(",")),
-            Token::new(TokenType::Semicolon, String::from(";")),
-            Token::new(TokenType::Eof, String::from("")),
+            Token::new(TokenType::Assign, "="),
+            Token::new(TokenType::Plus, "+"),
+            Token::new(TokenType::LeftParen, "("),
+            Token::new(TokenType::RightParen, ")"),
+            Token::new(TokenType::LeftBrace, "{"),
+            Token::new(TokenType::RightBrace, "}"),
+            Token::new(TokenType::Comma, ","),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::Eof, ""),
         ];
 
         let input = "=+(){},;";
@@ -152,43 +179,43 @@ mod test {
     #[test]
     fn test_simple_function() {
         let expected_tokens = [
-            Token::new(TokenType::Let, String::from("let")),
-            Token::new(TokenType::Identifier, String::from("five")),
-            Token::new(TokenType::Assign, String::from("=")),
-            Token::new(TokenType::Int, String::from("5")),
-            Token::new(TokenType::Semicolon, String::from(";")),
-            Token::new(TokenType::Let, String::from("let")),
-            Token::new(TokenType::Identifier, String::from("ten")),
-            Token::new(TokenType::Assign, String::from("=")),
-            Token::new(TokenType::Int, String::from("10")),
-            Token::new(TokenType::Semicolon, String::from(";")),
-            Token::new(TokenType::Let, String::from("let")),
-            Token::new(TokenType::Identifier, String::from("add")),
-            Token::new(TokenType::Assign, String::from("=")),
-            Token::new(TokenType::Function, String::from("fn")),
-            Token::new(TokenType::LeftParen, String::from("(")),
-            Token::new(TokenType::Identifier, String::from("x")),
-            Token::new(TokenType::Comma, String::from(",")),
-            Token::new(TokenType::Identifier, String::from("y")),
-            Token::new(TokenType::RightParen, String::from(")")),
-            Token::new(TokenType::LeftBrace, String::from("{")),
-            Token::new(TokenType::Identifier, String::from("x")),
-            Token::new(TokenType::Plus, String::from("+")),
-            Token::new(TokenType::Identifier, String::from("y")),
-            Token::new(TokenType::Semicolon, String::from(";")),
-            Token::new(TokenType::RightBrace, String::from("}")),
-            Token::new(TokenType::Semicolon, String::from(";")),
-            Token::new(TokenType::Let, String::from("let")),
-            Token::new(TokenType::Identifier, String::from("result")),
-            Token::new(TokenType::Assign, String::from("=")),
-            Token::new(TokenType::Identifier, String::from("add")),
-            Token::new(TokenType::LeftParen, String::from("(")),
-            Token::new(TokenType::Identifier, String::from("five")),
-            Token::new(TokenType::Comma, String::from(",")),
-            Token::new(TokenType::Identifier, String::from("ten")),
-            Token::new(TokenType::RightParen, String::from(")")),
-            Token::new(TokenType::Semicolon, String::from(";")),
-            Token::new(TokenType::Eof, String::from("")),
+            Token::new(TokenType::Let, "let"),
+            Token::new(TokenType::Identifier, "five"),
+            Token::new(TokenType::Assign, "="),
+            Token::new(TokenType::Int, "5"),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::Let, "let"),
+            Token::new(TokenType::Identifier, "ten"),
+            Token::new(TokenType::Assign, "="),
+            Token::new(TokenType::Int, "10"),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::Let, "let"),
+            Token::new(TokenType::Identifier, "add"),
+            Token::new(TokenType::Assign, "="),
+            Token::new(TokenType::Function, "fn"),
+            Token::new(TokenType::LeftParen, "("),
+            Token::new(TokenType::Identifier, "x"),
+            Token::new(TokenType::Comma, ","),
+            Token::new(TokenType::Identifier, "y"),
+            Token::new(TokenType::RightParen, ")"),
+            Token::new(TokenType::LeftBrace, "{"),
+            Token::new(TokenType::Identifier, "x"),
+            Token::new(TokenType::Plus, "+"),
+            Token::new(TokenType::Identifier, "y"),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::RightBrace, "}"),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::Let, "let"),
+            Token::new(TokenType::Identifier, "result"),
+            Token::new(TokenType::Assign, "="),
+            Token::new(TokenType::Identifier, "add"),
+            Token::new(TokenType::LeftParen, "("),
+            Token::new(TokenType::Identifier, "five"),
+            Token::new(TokenType::Comma, ","),
+            Token::new(TokenType::Identifier, "ten"),
+            Token::new(TokenType::RightParen, ")"),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::Eof, ""),
         ];
         let input = r"let five = 5;
         let ten = 10;
@@ -212,19 +239,19 @@ mod test {
         a -= 5;
         ";
         let expected_tokens = [
-            Token::new(TokenType::Let, String::from("let")),
-            Token::new(TokenType::Identifier, String::from("a")),
-            Token::new(TokenType::Assign, String::from("=")),
-            Token::new(TokenType::Int, String::from("10")),
-            Token::new(TokenType::Semicolon, String::from(";")),
-            Token::new(TokenType::Identifier, String::from("a")),
-            Token::new(TokenType::PlusEqual, String::from("+=")),
-            Token::new(TokenType::Int, String::from("8")),
-            Token::new(TokenType::Semicolon, String::from(";")),
-            Token::new(TokenType::Identifier, String::from("a")),
-            Token::new(TokenType::MinusEqual, String::from("-=")),
-            Token::new(TokenType::Int, String::from("5")),
-            Token::new(TokenType::Semicolon, String::from(";")),
+            Token::new(TokenType::Let, "let"),
+            Token::new(TokenType::Identifier, "a"),
+            Token::new(TokenType::Assign, "="),
+            Token::new(TokenType::Int, "10"),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::Identifier, "a"),
+            Token::new(TokenType::PlusEqual, "+="),
+            Token::new(TokenType::Int, "8"),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::Identifier, "a"),
+            Token::new(TokenType::MinusEqual, "-="),
+            Token::new(TokenType::Int, "5"),
+            Token::new(TokenType::Semicolon, ";"),
         ];
         let mut lexer = Lexer::new(input);
         for expected_token in expected_tokens {
@@ -239,23 +266,23 @@ mod test {
         a <= 4 == false;
         ";
         let expected_tokens = [
-            Token::new(TokenType::Let, String::from("let")),
-            Token::new(TokenType::Identifier, String::from("a")),
-            Token::new(TokenType::Assign, String::from("=")),
-            Token::new(TokenType::Int, String::from("10")),
-            Token::new(TokenType::Semicolon, String::from(";")),
-            Token::new(TokenType::Identifier, String::from("a")),
-            Token::new(TokenType::GreaterEqual, String::from(">=")),
-            Token::new(TokenType::Int, String::from("7")),
-            Token::new(TokenType::EqualEqual, String::from("==")),
-            Token::new(TokenType::True, String::from("true")),
-            Token::new(TokenType::Semicolon, String::from(";")),
-            Token::new(TokenType::Identifier, String::from("a")),
-            Token::new(TokenType::LessEqual, String::from("<=")),
-            Token::new(TokenType::Int, String::from("4")),
-            Token::new(TokenType::EqualEqual, String::from("==")),
-            Token::new(TokenType::False, String::from("false")),
-            Token::new(TokenType::Semicolon, String::from(";")),
+            Token::new(TokenType::Let, "let"),
+            Token::new(TokenType::Identifier, "a"),
+            Token::new(TokenType::Assign, "="),
+            Token::new(TokenType::Int, "10"),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::Identifier, "a"),
+            Token::new(TokenType::GreaterEqual, ">="),
+            Token::new(TokenType::Int, "7"),
+            Token::new(TokenType::EqualEqual, "=="),
+            Token::new(TokenType::True, "true"),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::Identifier, "a"),
+            Token::new(TokenType::LessEqual, "<="),
+            Token::new(TokenType::Int, "4"),
+            Token::new(TokenType::EqualEqual, "=="),
+            Token::new(TokenType::False, "false"),
+            Token::new(TokenType::Semicolon, ";"),
         ];
         let mut lexer = Lexer::new(input);
         for expected_token in expected_tokens {
