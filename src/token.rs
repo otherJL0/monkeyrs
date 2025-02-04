@@ -10,6 +10,9 @@ pub enum TokenType {
     // Operators
     Assign,
     Plus,
+    Minus,
+    PlusEqual,
+    MinusEqual,
 
     // Delimiters
     Comma,
@@ -23,6 +26,12 @@ pub enum TokenType {
     // Keywords
     Function,
     Let,
+
+    Greater,
+    GreaterEqual,
+    Less,
+    LessEqual,
+    EqualEqual,
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord)]
