@@ -11,13 +11,19 @@ pub enum TokenType {
     Assign,
     Plus,
     Minus,
+    Bang,
+    Asterisk,
+    Slash,
     PlusEqual,
     MinusEqual,
+    AsteriskEqual,
+    SlashEqual,
 
     Greater,
     GreaterEqual,
     Less,
     LessEqual,
+    BangEqual,
     EqualEqual,
 
     // Delimiters
@@ -43,10 +49,10 @@ pub struct Token {
 }
 
 impl Token {
-    pub fn new(token_type: TokenType, literal: String) -> Token {
+    pub fn new(token_type: TokenType, literal: &str) -> Token {
         Token {
             token_type,
-            literal,
+            literal: literal.to_string(),
         }
     }
 }
