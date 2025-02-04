@@ -252,6 +252,7 @@ mod test {
             Token::new(TokenType::MinusEqual, "-="),
             Token::new(TokenType::Int, "5"),
             Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::Eof, ""),
         ];
         let mut lexer = Lexer::new(input);
         for expected_token in expected_tokens {
@@ -264,6 +265,11 @@ mod test {
         let input = r"let a = 10;
         a >= 7 == true;
         a <= 4 == false;
+        a != 5;
+        a /= 2;
+        a == 5;
+        a *= 1;
+        !(a == 5) == false;
         ";
         let expected_tokens = [
             Token::new(TokenType::Let, "let"),
@@ -283,6 +289,32 @@ mod test {
             Token::new(TokenType::EqualEqual, "=="),
             Token::new(TokenType::False, "false"),
             Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::Identifier, "a"),
+            Token::new(TokenType::BangEqual, "!="),
+            Token::new(TokenType::Int, "5"),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::Identifier, "a"),
+            Token::new(TokenType::SlashEqual, "/="),
+            Token::new(TokenType::Int, "2"),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::Identifier, "a"),
+            Token::new(TokenType::EqualEqual, "=="),
+            Token::new(TokenType::Int, "5"),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::Identifier, "a"),
+            Token::new(TokenType::AsteriskEqual, "*="),
+            Token::new(TokenType::Int, "1"),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::Bang, "!"),
+            Token::new(TokenType::LeftParen, "("),
+            Token::new(TokenType::Identifier, "a"),
+            Token::new(TokenType::EqualEqual, "=="),
+            Token::new(TokenType::Int, "5"),
+            Token::new(TokenType::RightParen, ")"),
+            Token::new(TokenType::EqualEqual, "=="),
+            Token::new(TokenType::False, "false"),
+            Token::new(TokenType::Semicolon, ";"),
+            Token::new(TokenType::Eof, ""),
         ];
         let mut lexer = Lexer::new(input);
         for expected_token in expected_tokens {
