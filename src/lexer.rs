@@ -20,12 +20,16 @@ impl<'a> Lexer<'a> {
     }
 
     fn peek(&self) -> char {
-        self.input.chars().nth(self.read_position).unwrap()
+        if self.read_position >= self.input.len() {
+            '\0'
+        } else {
+            self.input.chars().nth(self.read_position).unwrap()
+        }
     }
 
     pub fn advance(&mut self) {
         self.ch = if self.read_position >= self.input.len() {
-            char::default()
+            '\0'
         } else {
             self.input.chars().nth(self.read_position).unwrap()
         };
