@@ -1,6 +1,7 @@
 use crate::lexer;
 use crate::token::{Token, TokenType};
 
+#[derive(Debug)]
 struct Identifier {
     pub token: Token,
     pub value: String,
@@ -12,6 +13,7 @@ impl Node for Identifier {
     }
 }
 
+#[derive(Debug)]
 enum StatementType {
     LetStatement(LetStatement),
 }
@@ -24,6 +26,7 @@ impl Node for StatementType {
     }
 }
 
+#[derive(Debug)]
 struct LetStatement {
     token: Token,
     name: Identifier,
@@ -50,6 +53,7 @@ trait Node {
     fn token_literal(&self) -> String;
 }
 
+#[derive(Debug)]
 struct Statement {}
 
 impl Node for Statement {
@@ -103,13 +107,13 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_let_statement(&mut self) -> Option<StatementType> {
-        let token = self.current_token.clone();
         if !self.expect_peek(TokenType::Identifier) {
             return None;
         }
+        let token = self.current_token.clone();
         let name = Identifier {
-            token: self.current_token.clone(),
-            value: self.current_token.literal.clone(),
+            token: self.next.clone(),
+            value: self.next.literal.clone(),
         };
         let stmt = LetStatement::new(token, name);
 
@@ -120,6 +124,7 @@ impl<'a> Parser<'a> {
         while self.current_token.token_type != TokenType::Semicolon {
             self.advance();
         }
+        self.advance();
         Some(StatementType::LetStatement(stmt))
     }
 
@@ -159,7 +164,6 @@ mod test {
         let expected_identifiers = ["x", "y", "pi"];
         let mut lexer = lexer::Lexer::new(input);
         let mut parser = Parser::new(&mut lexer);
-        let program = parser.parse_program();
         if let Some(program) = parser.parse_program() {
             assert_eq!(
                 program.statements.len(),
