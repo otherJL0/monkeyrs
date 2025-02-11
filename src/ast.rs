@@ -79,6 +79,7 @@ struct Parser<'a> {
     lexer: &'a mut lexer::Lexer<'a>,
     current_token: Token,
     next: Token,
+    errors: Vec<String>,
 }
 
 impl<'a> Parser<'a> {
@@ -89,6 +90,7 @@ impl<'a> Parser<'a> {
             lexer,
             current_token: current,
             next: next_token,
+            errors: Vec::new(),
         }
     }
 
@@ -97,6 +99,11 @@ impl<'a> Parser<'a> {
             self.advance();
             true
         } else {
+            let error = format!(
+                "expected next token to be {:?}, got {:?} insteas",
+                token_type, self.next.token_type
+            );
+            self.errors.push(error);
             false
         }
     }
@@ -124,14 +131,13 @@ impl<'a> Parser<'a> {
         while self.current_token.token_type != TokenType::Semicolon {
             self.advance();
         }
-        self.advance();
         Some(StatementType::LetStatement(stmt))
     }
 
     fn parse_statement(&mut self) -> Option<StatementType> {
         match self.current_token.token_type.clone() {
             TokenType::Let => self.parse_let_statement(),
-            x => todo!("found type {:?}", x.clone()),
+            _ => None,
         }
     }
 
@@ -141,12 +147,16 @@ impl<'a> Parser<'a> {
             if let Some(stmt) = self.parse_statement() {
                 statements.push(stmt);
             }
+            self.advance();
         }
         if statements.is_empty() {
             None
         } else {
             Some(Program { statements })
         }
+    }
+    pub fn errors(&self) -> Vec<String> {
+        self.errors.clone()
     }
 }
 
@@ -176,6 +186,24 @@ mod test {
                 .zip(program.statements.into_iter())
             {
                 assert_eq!(expected, &actual.token_literal());
+            }
+        } else {
+            assert!(false, "`Parser::parse_program()` returned None");
+        }
+    }
+
+    #[test]
+    fn test_let_statements_with_error() {
+        let input = r"
+        let x = 5;
+        let  = 314159;
+        ";
+        let mut lexer = lexer::Lexer::new(input);
+        let mut parser = Parser::new(&mut lexer);
+        if let Some(program) = parser.parse_program() {
+            assert!(!parser.errors().is_empty());
+            for err in parser.errors() {
+                println!("{err}");
             }
         } else {
             assert!(false, "`Parser::parse_program()` returned None");
