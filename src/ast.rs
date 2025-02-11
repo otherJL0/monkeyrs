@@ -16,13 +16,36 @@ impl Node for Identifier {
 #[derive(Debug)]
 enum StatementType {
     LetStatement(LetStatement),
+    ReturnStatement(ReturnStatement),
 }
 
 impl Node for StatementType {
     fn token_literal(&self) -> String {
         match self {
             StatementType::LetStatement(let_stmt) => let_stmt.token_literal(),
+            StatementType::ReturnStatement(return_stmt) => return_stmt.token_literal(),
         }
+    }
+}
+
+#[derive(Debug)]
+struct ReturnStatement {
+    token: Token,
+    expression: Option<String>,
+}
+
+impl ReturnStatement {
+    pub fn new(token: Token) -> ReturnStatement {
+        ReturnStatement {
+            token,
+            expression: None,
+        }
+    }
+}
+
+impl Node for ReturnStatement {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
     }
 }
 
@@ -114,7 +137,12 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_return_statement(&mut self) -> Option<StatementType> {
-        todo!()
+        let stmt = ReturnStatement::new(self.current_token.clone());
+        self.advance();
+        while self.current_token.token_type != TokenType::Semicolon {
+            self.advance()
+        }
+        Some(StatementType::ReturnStatement(stmt))
     }
 
     fn parse_let_statement(&mut self) -> Option<StatementType> {
@@ -206,7 +234,7 @@ mod test {
         let expected_errors = ["expected next token to be Identifier, got Assign instead"];
         let mut lexer = lexer::Lexer::new(input);
         let mut parser = Parser::new(&mut lexer);
-        if let Some(program) = parser.parse_program() {
+        if let Some(_program) = parser.parse_program() {
             assert!(!parser.errors().is_empty());
             for (actual, expected) in parser.errors().iter().zip(expected_errors.iter()) {
                 assert_eq!(actual, *expected);
@@ -218,11 +246,23 @@ mod test {
 
     #[test]
     fn test_parse_return_statement() {
-        let input = "return true;";
+        let input = r"
+        return true;
+        return 10;
+        return 1 + 4;
+        ";
         let mut lexer = lexer::Lexer::new(input);
         let mut parser = Parser::new(&mut lexer);
         if let Some(program) = parser.parse_program() {
-            assert!(parser.errors().is_empty());
+            assert!(program.statements.len() == 3);
+            for stmt in program.statements {
+                assert_eq!(
+                    stmt.token_literal(),
+                    "return",
+                    "return_stmt.token_literal not `return`, got {}",
+                    stmt.token_literal()
+                );
+            }
         }
     }
 }
