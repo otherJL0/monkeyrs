@@ -154,7 +154,7 @@ impl<'a> Lexer<'a> {
             }
         };
         self.advance();
-        token.clone()
+        token
     }
 }
 

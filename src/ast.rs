@@ -110,7 +110,7 @@ impl<'a> Parser<'a> {
 
     fn advance(&mut self) {
         self.current_token = self.next.clone();
-        self.next = self.lexer.next_token().clone();
+        self.next = self.lexer.next_token();
     }
 
     fn parse_let_statement(&mut self) -> Option<StatementType> {
