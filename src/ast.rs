@@ -1,5 +1,6 @@
 use crate::lexer;
 use crate::token::{Token, TokenType};
+use std::fmt;
 
 #[derive(Debug)]
 struct Identifier {
@@ -17,14 +18,54 @@ impl Node for Identifier {
 enum StatementType {
     LetStatement(LetStatement),
     ReturnStatement(ReturnStatement),
+    ExpressionStatement(ExpressionStatement),
 }
 
 impl Node for StatementType {
     fn token_literal(&self) -> String {
         match self {
-            StatementType::LetStatement(let_stmt) => let_stmt.token_literal(),
-            StatementType::ReturnStatement(return_stmt) => return_stmt.token_literal(),
+            StatementType::LetStatement(stmt) => stmt.token_literal(),
+            StatementType::ReturnStatement(stmt) => stmt.token_literal(),
+            StatementType::ExpressionStatement(stmt) => stmt.token_literal(),
         }
+    }
+}
+
+impl fmt::Display for StatementType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let output = match self {
+            StatementType::LetStatement(stmt) => stmt.to_string(),
+            StatementType::ReturnStatement(stmt) => stmt.to_string(),
+            StatementType::ExpressionStatement(stmt) => stmt.to_string(),
+        };
+        write!(f, "{output}")
+    }
+}
+
+#[derive(Debug)]
+struct ExpressionStatement {
+    token: Token,
+    expression: Option<String>,
+}
+
+impl ExpressionStatement {
+    pub fn new(token: Token) -> ExpressionStatement {
+        ExpressionStatement {
+            token,
+            expression: None,
+        }
+    }
+}
+
+impl Node for ExpressionStatement {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+}
+
+impl fmt::Display for ExpressionStatement {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{};", self.expression.clone().unwrap())
     }
 }
 
@@ -46,6 +87,12 @@ impl ReturnStatement {
 impl Node for ReturnStatement {
     fn token_literal(&self) -> String {
         self.token.literal.clone()
+    }
+}
+
+impl fmt::Display for ReturnStatement {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "return {};", self.expression.clone().unwrap())
     }
 }
 
@@ -72,17 +119,14 @@ impl Node for LetStatement {
     }
 }
 
-trait Node {
-    fn token_literal(&self) -> String;
+impl fmt::Display for LetStatement {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "let {} = {}", &self.name.value, &self.value)
+    }
 }
 
-#[derive(Debug)]
-struct Statement {}
-
-impl Node for Statement {
-    fn token_literal(&self) -> String {
-        "Statement".to_string()
-    }
+trait Node {
+    fn token_literal(&self) -> String;
 }
 
 struct Program {
