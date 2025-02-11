@@ -15,28 +15,28 @@ impl Node for Identifier {
 }
 
 #[derive(Debug)]
-enum StatementType {
+enum Statement {
     LetStatement(LetStatement),
     ReturnStatement(ReturnStatement),
     ExpressionStatement(ExpressionStatement),
 }
 
-impl Node for StatementType {
+impl Node for Statement {
     fn token_literal(&self) -> String {
         match self {
-            StatementType::LetStatement(stmt) => stmt.token_literal(),
-            StatementType::ReturnStatement(stmt) => stmt.token_literal(),
-            StatementType::ExpressionStatement(stmt) => stmt.token_literal(),
+            Statement::LetStatement(stmt) => stmt.token_literal(),
+            Statement::ReturnStatement(stmt) => stmt.token_literal(),
+            Statement::ExpressionStatement(stmt) => stmt.token_literal(),
         }
     }
 }
 
-impl fmt::Display for StatementType {
+impl fmt::Display for Statement {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let output = match self {
-            StatementType::LetStatement(stmt) => stmt.to_string(),
-            StatementType::ReturnStatement(stmt) => stmt.to_string(),
-            StatementType::ExpressionStatement(stmt) => stmt.to_string(),
+            Statement::LetStatement(stmt) => stmt.to_string(),
+            Statement::ReturnStatement(stmt) => stmt.to_string(),
+            Statement::ExpressionStatement(stmt) => stmt.to_string(),
         };
         write!(f, "{output}")
     }
@@ -130,7 +130,7 @@ trait Node {
 }
 
 struct Program {
-    statements: Vec<StatementType>,
+    statements: Vec<Statement>,
 }
 
 impl Node for Program {
@@ -180,16 +180,16 @@ impl<'a> Parser<'a> {
         self.next = self.lexer.next_token();
     }
 
-    fn parse_return_statement(&mut self) -> Option<StatementType> {
+    fn parse_return_statement(&mut self) -> Option<Statement> {
         let stmt = ReturnStatement::new(self.current_token.clone());
         self.advance();
         while self.current_token.token_type != TokenType::Semicolon {
             self.advance()
         }
-        Some(StatementType::ReturnStatement(stmt))
+        Some(Statement::ReturnStatement(stmt))
     }
 
-    fn parse_let_statement(&mut self) -> Option<StatementType> {
+    fn parse_let_statement(&mut self) -> Option<Statement> {
         if !self.expect_peek(TokenType::Identifier) {
             return None;
         }
@@ -207,10 +207,10 @@ impl<'a> Parser<'a> {
         while self.current_token.token_type != TokenType::Semicolon {
             self.advance();
         }
-        Some(StatementType::LetStatement(stmt))
+        Some(Statement::LetStatement(stmt))
     }
 
-    fn parse_statement(&mut self) -> Option<StatementType> {
+    fn parse_statement(&mut self) -> Option<Statement> {
         match self.current_token.token_type.clone() {
             TokenType::Let => self.parse_let_statement(),
             TokenType::Return => self.parse_return_statement(),
