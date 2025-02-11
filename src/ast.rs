@@ -113,6 +113,10 @@ impl<'a> Parser<'a> {
         self.next = self.lexer.next_token();
     }
 
+    fn parse_return_statement(&mut self) -> Option<StatementType> {
+        todo!()
+    }
+
     fn parse_let_statement(&mut self) -> Option<StatementType> {
         if !self.expect_peek(TokenType::Identifier) {
             return None;
@@ -137,6 +141,7 @@ impl<'a> Parser<'a> {
     fn parse_statement(&mut self) -> Option<StatementType> {
         match self.current_token.token_type.clone() {
             TokenType::Let => self.parse_let_statement(),
+            TokenType::Return => self.parse_return_statement(),
             _ => None,
         }
     }
@@ -208,6 +213,16 @@ mod test {
             }
         } else {
             assert!(false, "`Parser::parse_program()` returned None");
+        }
+    }
+
+    #[test]
+    fn test_parse_return_statement() {
+        let input = "return true;";
+        let mut lexer = lexer::Lexer::new(input);
+        let mut parser = Parser::new(&mut lexer);
+        if let Some(program) = parser.parse_program() {
+            assert!(parser.errors().is_empty());
         }
     }
 }
