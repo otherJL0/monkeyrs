@@ -100,7 +100,7 @@ impl<'a> Parser<'a> {
             true
         } else {
             let error = format!(
-                "expected next token to be {:?}, got {:?} insteas",
+                "expected next token to be {:?}, got {:?} instead",
                 token_type, self.next.token_type
             );
             self.errors.push(error);
@@ -198,12 +198,13 @@ mod test {
         let x = 5;
         let  = 314159;
         ";
+        let expected_errors = ["expected next token to be Identifier, got Assign instead"];
         let mut lexer = lexer::Lexer::new(input);
         let mut parser = Parser::new(&mut lexer);
         if let Some(program) = parser.parse_program() {
             assert!(!parser.errors().is_empty());
-            for err in parser.errors() {
-                println!("{err}");
+            for (actual, expected) in parser.errors().iter().zip(expected_errors.iter()) {
+                assert_eq!(actual, *expected);
             }
         } else {
             assert!(false, "`Parser::parse_program()` returned None");
