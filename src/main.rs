@@ -1,5 +1,6 @@
 mod ast;
 mod lexer;
+mod parser;
 mod token;
 use crate::lexer::Lexer;
 use reedline::{

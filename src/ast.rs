@@ -3,7 +3,7 @@ use crate::token::{Token, TokenType};
 use std::fmt;
 
 #[derive(Debug)]
-struct Identifier {
+pub struct Identifier {
     pub token: Token,
     pub value: String,
 }
@@ -14,8 +14,10 @@ impl Node for Identifier {
     }
 }
 
+pub enum Expression {}
+
 #[derive(Debug)]
-enum Statement {
+pub enum Statement {
     LetStatement(LetStatement),
     ReturnStatement(ReturnStatement),
     ExpressionStatement(ExpressionStatement),
@@ -43,7 +45,7 @@ impl fmt::Display for Statement {
 }
 
 #[derive(Debug)]
-struct ExpressionStatement {
+pub struct ExpressionStatement {
     token: Token,
     expression: Option<String>,
 }
@@ -70,7 +72,7 @@ impl fmt::Display for ExpressionStatement {
 }
 
 #[derive(Debug)]
-struct ReturnStatement {
+pub struct ReturnStatement {
     token: Token,
     expression: Option<String>,
 }
@@ -97,7 +99,7 @@ impl fmt::Display for ReturnStatement {
 }
 
 #[derive(Debug)]
-struct LetStatement {
+pub struct LetStatement {
     token: Token,
     name: Identifier,
     value: String,
@@ -125,12 +127,12 @@ impl fmt::Display for LetStatement {
     }
 }
 
-trait Node {
+pub trait Node {
     fn token_literal(&self) -> String;
 }
 
-struct Program {
-    statements: Vec<Statement>,
+pub struct Program {
+    pub statements: Vec<Statement>,
 }
 
 impl Node for Program {
@@ -139,174 +141,5 @@ impl Node for Program {
             .first()
             .map(|s| s.token_literal())
             .unwrap_or_default()
-    }
-}
-
-struct Parser<'a> {
-    lexer: &'a mut lexer::Lexer<'a>,
-    current_token: Token,
-    next: Token,
-    errors: Vec<String>,
-}
-
-impl<'a> Parser<'a> {
-    pub fn new(lexer: &'a mut lexer::Lexer<'a>) -> Parser<'a> {
-        let current = lexer.next_token();
-        let next_token = lexer.next_token();
-        Parser {
-            lexer,
-            current_token: current,
-            next: next_token,
-            errors: Vec::new(),
-        }
-    }
-
-    fn expect_peek(&mut self, token_type: TokenType) -> bool {
-        if self.next.token_type == token_type {
-            self.advance();
-            true
-        } else {
-            let error = format!(
-                "expected next token to be {:?}, got {:?} instead",
-                token_type, self.next.token_type
-            );
-            self.errors.push(error);
-            false
-        }
-    }
-
-    fn advance(&mut self) {
-        self.current_token = self.next.clone();
-        self.next = self.lexer.next_token();
-    }
-
-    fn parse_return_statement(&mut self) -> Option<Statement> {
-        let stmt = ReturnStatement::new(self.current_token.clone());
-        self.advance();
-        while self.current_token.token_type != TokenType::Semicolon {
-            self.advance()
-        }
-        Some(Statement::ReturnStatement(stmt))
-    }
-
-    fn parse_let_statement(&mut self) -> Option<Statement> {
-        if !self.expect_peek(TokenType::Identifier) {
-            return None;
-        }
-        let token = self.current_token.clone();
-        let name = Identifier {
-            token: self.next.clone(),
-            value: self.next.literal.clone(),
-        };
-        let stmt = LetStatement::new(token, name);
-
-        if !self.expect_peek(TokenType::Assign) {
-            return None;
-        }
-
-        while self.current_token.token_type != TokenType::Semicolon {
-            self.advance();
-        }
-        Some(Statement::LetStatement(stmt))
-    }
-
-    fn parse_statement(&mut self) -> Option<Statement> {
-        match self.current_token.token_type.clone() {
-            TokenType::Let => self.parse_let_statement(),
-            TokenType::Return => self.parse_return_statement(),
-            _ => None,
-        }
-    }
-
-    pub fn parse_program(&mut self) -> Option<Program> {
-        let mut statements = vec![];
-        while self.current_token.token_type != TokenType::Eof {
-            if let Some(stmt) = self.parse_statement() {
-                statements.push(stmt);
-            }
-            self.advance();
-        }
-        if statements.is_empty() {
-            None
-        } else {
-            Some(Program { statements })
-        }
-    }
-    pub fn errors(&self) -> Vec<String> {
-        self.errors.clone()
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn test_let_statements() {
-        let input = r"
-        let x = 5;
-        let y = 10;
-        let pi = 314159;
-        ";
-        let expected_identifiers = ["x", "y", "pi"];
-        let mut lexer = lexer::Lexer::new(input);
-        let mut parser = Parser::new(&mut lexer);
-        if let Some(program) = parser.parse_program() {
-            assert_eq!(
-                program.statements.len(),
-                3,
-                "Expected three statements, got {}",
-                program.statements.len()
-            );
-            for (expected, actual) in expected_identifiers
-                .into_iter()
-                .zip(program.statements.into_iter())
-            {
-                assert_eq!(expected, &actual.token_literal());
-            }
-        } else {
-            assert!(false, "`Parser::parse_program()` returned None");
-        }
-    }
-
-    #[test]
-    fn test_let_statements_with_error() {
-        let input = r"
-        let x = 5;
-        let  = 314159;
-        ";
-        let expected_errors = ["expected next token to be Identifier, got Assign instead"];
-        let mut lexer = lexer::Lexer::new(input);
-        let mut parser = Parser::new(&mut lexer);
-        if let Some(_program) = parser.parse_program() {
-            assert!(!parser.errors().is_empty());
-            for (actual, expected) in parser.errors().iter().zip(expected_errors.iter()) {
-                assert_eq!(actual, *expected);
-            }
-        } else {
-            assert!(false, "`Parser::parse_program()` returned None");
-        }
-    }
-
-    #[test]
-    fn test_parse_return_statement() {
-        let input = r"
-        return true;
-        return 10;
-        return 1 + 4;
-        ";
-        let mut lexer = lexer::Lexer::new(input);
-        let mut parser = Parser::new(&mut lexer);
-        if let Some(program) = parser.parse_program() {
-            assert!(program.statements.len() == 3);
-            for stmt in program.statements {
-                assert_eq!(
-                    stmt.token_literal(),
-                    "return",
-                    "return_stmt.token_literal not `return`, got {}",
-                    stmt.token_literal()
-                );
-            }
-        }
     }
 }
