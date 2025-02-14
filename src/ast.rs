@@ -1,8 +1,29 @@
 use crate::lexer;
-use crate::token::{Token, TokenType};
+use crate::token::Token;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
+pub enum Expression {
+    Identifier(Identifier),
+}
+
+impl Node for Expression {
+    fn token_literal(&self) -> String {
+        match self {
+            Expression::Identifier(expr) => expr.token_literal(),
+        }
+    }
+}
+
+impl fmt::Display for Expression {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Expression::Identifier(expr) => write!(f, "{}", expr.token.literal),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct Identifier {
     pub token: Token,
     pub value: String,
@@ -13,8 +34,6 @@ impl Node for Identifier {
         self.token.literal.clone()
     }
 }
-
-pub enum Expression {}
 
 #[derive(Debug)]
 pub enum Statement {
@@ -47,15 +66,12 @@ impl fmt::Display for Statement {
 #[derive(Debug)]
 pub struct ExpressionStatement {
     token: Token,
-    expression: Option<String>,
+    expression: Expression,
 }
 
 impl ExpressionStatement {
-    pub fn new(token: Token) -> ExpressionStatement {
-        ExpressionStatement {
-            token,
-            expression: None,
-        }
+    pub fn new(token: Token, expression: Expression) -> ExpressionStatement {
+        ExpressionStatement { token, expression }
     }
 }
 
@@ -67,7 +83,7 @@ impl Node for ExpressionStatement {
 
 impl fmt::Display for ExpressionStatement {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{};", self.expression.clone().unwrap())
+        write!(f, "{};", self.expression.clone())
     }
 }
 
