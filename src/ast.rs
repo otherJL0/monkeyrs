@@ -3,6 +3,9 @@ pub trait Node {
     fn token_literal(&self) -> String;
 }
 
+pub trait Statement: Node {}
+pub trait Expression: Node {}
+
 #[derive(Debug)]
 pub struct Identifier {
     pub token: token::Token,
@@ -15,38 +18,40 @@ pub struct LetStmt {
     pub name: Identifier,
     pub value: Option<ExpressionStmt>,
 }
+impl Node for LetStmt {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+}
+impl Statement for LetStmt {}
 
 #[derive(Debug)]
 pub struct ReturnStmt {
     pub token: token::Token,
     pub return_value: Option<ExpressionStmt>,
 }
-
-#[derive(Debug)]
-pub enum Statement {
-    Let(LetStmt),
-    Return(ReturnStmt),
-    Expression(ExpressionStmt),
-}
-
-impl Node for Statement {
+impl Node for ReturnStmt {
     fn token_literal(&self) -> String {
-        String::from("Statement token literal")
+        self.token.literal.clone()
     }
 }
+impl Statement for ReturnStmt {}
 
 #[derive(Debug)]
 pub struct ExpressionStmt {
     token: token::Token,
-    expression: Expression,
 }
 
-#[derive(Debug)]
-pub struct Expression {}
+impl Node for ExpressionStmt {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+}
+impl Statement for ExpressionStmt {}
 
 #[derive(Default)]
 pub struct Program {
-    pub statements: Vec<Statement>,
+    pub statements: Vec<Box<dyn Statement>>,
 }
 
 impl Node for Program {

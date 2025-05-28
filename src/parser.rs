@@ -43,7 +43,7 @@ impl<'a> Parser<'a> {
         self.peek_token = self.lexer.next_token();
     }
 
-    fn parse_let_statement(&mut self) -> Option<ast::Statement> {
+    fn parse_let_statement(&mut self) -> Option<Box<dyn ast::Statement>> {
         if !self.peek_token.is_type(token::TokenType::Identifier) {
             return None;
         }
@@ -61,26 +61,26 @@ impl<'a> Parser<'a> {
         while !self.current_token.is_type(token::TokenType::Semicolon) {
             self.advance();
         }
-        let statement = ast::Let {
+        let statement = ast::LetStmt {
             token,
             name,
             value: None,
         };
-        Some(ast::Statement::Let(statement))
+        Some(Box::new(statement))
     }
 
-    fn parse_return_statement(&mut self) -> Option<ast::Statement> {
-        let return_statement = ast::Return {
+    fn parse_return_statement(&mut self) -> Option<Box<dyn ast::Statement>> {
+        let return_statement = ast::ReturnStmt {
             token: self.current_token.clone(),
             return_value: None,
         };
         while !self.current_token.is_type(token::TokenType::Semicolon) {
             self.advance();
         }
-        Some(ast::Statement::Return(return_statement))
+        Some(Box::new(return_statement))
     }
 
-    fn parse_statement(&mut self) -> Option<ast::Statement> {
+    fn parse_statement(&mut self) -> Option<Box<dyn ast::Statement>> {
         match self.current_token.token_type {
             token::TokenType::Let => self.parse_let_statement(),
             token::TokenType::Return => self.parse_return_statement(),
