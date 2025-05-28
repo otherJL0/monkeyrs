@@ -4,9 +4,9 @@ use crate::token;
 
 pub struct Parser<'a> {
     lexer: lexer::Lexer<'a>,
-
     current_token: token::Token,
     peek_token: token::Token,
+    errors: Vec<String>,
 }
 
 impl<'a> Parser<'a> {
@@ -17,10 +17,27 @@ impl<'a> Parser<'a> {
             lexer,
             current_token,
             peek_token,
+            errors: vec![],
         }
     }
 
-    fn next_token(&mut self) {
+    fn expect_peek(&mut self, token_type: token::TokenType) -> bool {
+        if self.peek_token.is_type(token_type.clone()) {
+            self.advance();
+            true
+        } else {
+            self.peek_error(token_type.clone());
+            false
+        }
+    }
+    fn peek_error(&self, token_type: token::TokenType) {
+        println!(
+            "expected next token to be {:?}, got {:?} instead",
+            token_type, self.peek_token.token_type
+        );
+    }
+
+    fn advance(&mut self) {
         self.current_token = self.peek_token.clone();
         self.peek_token = self.lexer.next_token();
     }
@@ -30,17 +47,18 @@ impl<'a> Parser<'a> {
             return None;
         }
         let token = self.current_token.clone();
-        self.next_token();
+        if !self.expect_peek(token::TokenType::Identifier) {
+            return None;
+        }
         let name = ast::Identifier {
             token: self.current_token.clone(),
             value: self.current_token.literal.clone(),
         };
-        if !self.peek_token.is_type(token::TokenType::Assign) {
+        if !self.expect_peek(token::TokenType::Assign) {
             return None;
         }
-        self.next_token();
         while !self.current_token.is_type(token::TokenType::Semicolon) {
-            self.next_token();
+            self.advance();
         }
         let statement = ast::Let {
             token,
@@ -63,7 +81,7 @@ impl<'a> Parser<'a> {
             if let Some(statement) = self.parse_statement() {
                 program.statements.push(statement);
             }
-            self.next_token();
+            self.advance();
         }
         Some(program)
     }
