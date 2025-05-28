@@ -69,9 +69,21 @@ impl<'a> Parser<'a> {
         Some(ast::Statement::Let(statement))
     }
 
+    fn parse_return_statement(&mut self) -> Option<ast::Statement> {
+        let return_statement = ast::Return {
+            token: self.current_token.clone(),
+            return_value: None,
+        };
+        while !self.current_token.is_type(token::TokenType::Semicolon) {
+            self.advance();
+        }
+        Some(ast::Statement::Return(return_statement))
+    }
+
     fn parse_statement(&mut self) -> Option<ast::Statement> {
         match self.current_token.token_type {
             token::TokenType::Let => self.parse_let_statement(),
+            token::TokenType::Return => self.parse_return_statement(),
             _ => None,
         }
     }
@@ -98,8 +110,7 @@ mod test {
         let x = 5;
         let y = 10;
         let foobar = 3141259265;
-        "
-        .to_string();
+        ";
         let lexer = lexer::Lexer::new(&input);
         let mut parser = Parser::new(lexer);
         let program = parser.parse_program();
@@ -114,6 +125,23 @@ mod test {
             program.unwrap().statements.len(),
             3,
             "program.statements dows not contain three statements"
+        );
+    }
+
+    #[test]
+    fn test_return_statement() {
+        let input = "
+        return 10;
+        return 8 + 9;
+        return double(5);
+        ";
+        let lexer = lexer::Lexer::new(&input);
+        let mut parser = Parser::new(lexer);
+        let program = parser.parse_program();
+        assert!(program.is_some(), "parser.parse_program returned None");
+        assert!(
+            program.unwrap().statements.len() == 3,
+            "expected 3 statements"
         );
     }
 }

@@ -17,7 +17,10 @@ pub struct Let {
 }
 
 #[derive(Debug)]
-pub struct Return {}
+pub struct Return {
+    pub token: token::Token,
+    pub return_value: Option<Expression>,
+}
 
 #[derive(Debug)]
 pub enum Statement {
