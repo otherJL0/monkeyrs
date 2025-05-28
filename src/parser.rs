@@ -6,7 +6,7 @@ pub struct Parser<'a> {
     lexer: lexer::Lexer<'a>,
     current_token: token::Token,
     peek_token: token::Token,
-    errors: Vec<String>,
+    pub errors: Vec<String>,
 }
 
 impl<'a> Parser<'a> {
@@ -30,11 +30,12 @@ impl<'a> Parser<'a> {
             false
         }
     }
-    fn peek_error(&self, token_type: token::TokenType) {
-        println!(
+    fn peek_error(&mut self, token_type: token::TokenType) {
+        let message = format!(
             "expected next token to be {:?}, got {:?} instead",
             token_type, self.peek_token.token_type
         );
+        self.errors.push(message)
     }
 
     fn advance(&mut self) {
@@ -102,6 +103,12 @@ mod test {
         let lexer = lexer::Lexer::new(&input);
         let mut parser = Parser::new(lexer);
         let program = parser.parse_program();
+        assert!(
+            parser.errors.is_empty(),
+            "parser has {} errors:\n{}",
+            parser.errors.len(),
+            parser.errors.join("\n")
+        );
         assert!(program.is_some(), "parser.parse_program returned None");
         assert_eq!(
             program.unwrap().statements.len(),
