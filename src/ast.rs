@@ -10,23 +10,23 @@ pub struct Identifier {
 }
 
 #[derive(Debug)]
-pub struct Let {
+pub struct LetStmt {
     pub token: token::Token,
     pub name: Identifier,
-    pub value: Option<Expression>,
+    pub value: Option<ExpressionStmt>,
 }
 
 #[derive(Debug)]
-pub struct Return {
+pub struct ReturnStmt {
     pub token: token::Token,
-    pub return_value: Option<Expression>,
+    pub return_value: Option<ExpressionStmt>,
 }
 
 #[derive(Debug)]
 pub enum Statement {
-    Let(Let),
-    Return(Return),
-    Expression(Expression),
+    Let(LetStmt),
+    Return(ReturnStmt),
+    Expression(ExpressionStmt),
 }
 
 impl Node for Statement {
@@ -36,7 +36,13 @@ impl Node for Statement {
 }
 
 #[derive(Debug)]
-pub enum Expression {}
+pub struct ExpressionStmt {
+    token: token::Token,
+    expression: Expression,
+}
+
+#[derive(Debug)]
+pub struct Expression {}
 
 #[derive(Default)]
 pub struct Program {
