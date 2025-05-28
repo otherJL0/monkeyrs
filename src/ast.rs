@@ -4,16 +4,16 @@ pub trait Node {
 }
 
 #[derive(Debug)]
-struct Identifier {
-    token: token::Token,
-    value: String,
+pub struct Identifier {
+    pub token: token::Token,
+    pub value: String,
 }
 
 #[derive(Debug)]
 pub struct Let {
-    token: token::Token,
-    name: Identifier,
-    value: Expression,
+    pub token: token::Token,
+    pub name: Identifier,
+    pub value: Option<Expression>,
 }
 
 #[derive(Debug)]
@@ -35,8 +35,9 @@ impl Node for Statement {
 #[derive(Debug)]
 pub enum Expression {}
 
+#[derive(Default)]
 pub struct Program {
-    statements: Vec<Statement>,
+    pub statements: Vec<Statement>,
 }
 
 impl Node for Program {

@@ -52,6 +52,12 @@ pub struct Token {
 }
 
 impl Token {
+    pub fn is_type(&self, target_type: TokenType) -> bool {
+        self.token_type == target_type
+    }
+}
+
+impl Token {
     pub fn new(token_type: TokenType, literal: &str) -> Token {
         Token {
             token_type,
