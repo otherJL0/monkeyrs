@@ -6,12 +6,24 @@ pub trait Node: fmt::Display {
 }
 
 pub trait Statement: Node {}
-pub trait Expression: Node {}
+pub trait Expression: Node + fmt::Debug {}
 
 #[derive(Debug, Clone)]
 pub struct Identifier {
     pub token: token::Token,
     pub value: String,
+}
+
+impl Identifier {
+    pub fn new(value: String) -> Identifier {
+        Identifier {
+            token: token::Token {
+                token_type: token::TokenType::Identifier,
+                literal: value.clone(),
+            },
+            value,
+        }
+    }
 }
 
 impl fmt::Display for Identifier {
@@ -20,11 +32,23 @@ impl fmt::Display for Identifier {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct LetStmt {
     pub token: token::Token,
     pub name: Identifier,
     pub value: Option<ExpressionStmt>,
+}
+impl LetStmt {
+    pub fn new(identifier: Identifier, value: Option<ExpressionStmt>) -> LetStmt {
+        LetStmt {
+            token: token::Token {
+                token_type: token::TokenType::Let,
+                literal: "let".to_string(),
+            },
+            name: identifier,
+            value,
+        }
+    }
 }
 
 impl fmt::Display for LetStmt {
@@ -35,7 +59,7 @@ impl fmt::Display for LetStmt {
             self.token.literal,
             self.name,
             self.value
-                .clone()
+                .as_ref()
                 .map_or(String::default(), |value| value.to_string())
         )
     }
@@ -59,7 +83,7 @@ impl fmt::Display for ReturnStmt {
             "{} {};",
             self.token_literal(),
             self.return_value
-                .clone()
+                .as_ref()
                 .map_or(String::default(), |value| value.to_string())
         )
     }
@@ -71,14 +95,15 @@ impl Node for ReturnStmt {
 }
 impl Statement for ReturnStmt {}
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct ExpressionStmt {
     token: token::Token,
+    expression: Box<dyn Expression>,
 }
 
 impl fmt::Display for ExpressionStmt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "")
+        write!(f, "",)
     }
 }
 
@@ -95,7 +120,11 @@ pub struct Program {
 }
 impl fmt::Display for Program {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "")
+        let mut statements = vec![];
+        for statement in &self.statements {
+            statements.push(statement.to_string());
+        }
+        write!(f, "{}", statements.join("\n"))
     }
 }
 
@@ -106,5 +135,21 @@ impl Node for Program {
         } else {
             self.statements.first().unwrap().token_literal()
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_to_string() {
+        let program = Program {
+            statements: vec![Box::new(LetStmt::new(
+                Identifier::new("myVar".to_string()),
+                None,
+            ))],
+        };
+        assert_eq!(program.to_string(), "let myVar = anotherVar;");
     }
 }
