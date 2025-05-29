@@ -26,7 +26,7 @@ impl<'a> Parser<'a> {
             self.advance();
             true
         } else {
-            self.peek_error(token_type.clone());
+            self.peek_error(token_type);
             false
         }
     }
