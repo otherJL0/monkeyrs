@@ -31,15 +31,21 @@ impl fmt::Display for Identifier {
         write!(f, "{}", self.value)
     }
 }
+impl Node for Identifier {
+    fn token_literal(&self) -> String {
+        self.value.clone()
+    }
+}
+impl Expression for Identifier {}
 
 #[derive(Debug)]
 pub struct LetStmt {
     pub token: token::Token,
     pub name: Identifier,
-    pub value: Option<ExpressionStmt>,
+    pub value: Option<Box<dyn Expression>>,
 }
 impl LetStmt {
-    pub fn new(identifier: Identifier, value: Option<ExpressionStmt>) -> LetStmt {
+    pub fn new(identifier: Identifier, value: Option<Box<dyn Expression>>) -> LetStmt {
         LetStmt {
             token: token::Token {
                 token_type: token::TokenType::Let,
@@ -103,7 +109,7 @@ pub struct ExpressionStmt {
 
 impl fmt::Display for ExpressionStmt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "",)
+        write!(f, "{}", self.expression.as_ref().to_string())
     }
 }
 
@@ -147,7 +153,7 @@ mod test {
         let program = Program {
             statements: vec![Box::new(LetStmt::new(
                 Identifier::new("myVar".to_string()),
-                None,
+                Some(Box::new(Identifier::new("anotherVar".to_string()))),
             ))],
         };
         assert_eq!(program.to_string(), "let myVar = anotherVar;");
