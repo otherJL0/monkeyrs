@@ -1,6 +1,6 @@
 // use std::fmt;
 
-#[derive(Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub enum TokenType {
     Illegal,
     Eof,

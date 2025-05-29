@@ -22,7 +22,7 @@ impl<'a> Parser<'a> {
     }
 
     fn expect_peek(&mut self, token_type: token::TokenType) -> bool {
-        if self.peek_token.is_type(token_type.clone()) {
+        if self.peek_token.is_type(token_type) {
             self.advance();
             true
         } else {
@@ -35,7 +35,7 @@ impl<'a> Parser<'a> {
             "expected next token to be {:?}, got {:?} instead",
             token_type, self.peek_token.token_type
         );
-        self.errors.push(message)
+        self.errors.push(message);
     }
 
     fn advance(&mut self) {
