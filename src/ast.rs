@@ -66,7 +66,7 @@ impl fmt::Display for LetStmt {
             self.name,
             self.value
                 .as_ref()
-                .map_or(String::default(), |value| value.to_string())
+                .map_or(String::default(), std::string::ToString::to_string)
         )
     }
 }
@@ -90,7 +90,7 @@ impl fmt::Display for ReturnStmt {
             self.token_literal(),
             self.return_value
                 .as_ref()
-                .map_or(String::default(), |value| value.to_string())
+                .map_or(String::default(), std::string::ToString::to_string)
         )
     }
 }
