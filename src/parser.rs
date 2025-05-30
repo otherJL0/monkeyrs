@@ -10,7 +10,7 @@ pub struct Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
-    fn new(mut lexer: lexer::Lexer<'a>) -> Parser<'a> {
+    pub fn new(mut lexer: lexer::Lexer<'a>) -> Parser<'a> {
         let current_token = lexer.next_token();
         let peek_token = lexer.next_token();
         Parser {
@@ -76,7 +76,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_program(&mut self) -> Option<ast::Program> {
+    pub fn parse_program(&mut self) -> Option<ast::Program> {
         let mut program = ast::Program::default();
         while self.current_token.token_type != token::TokenType::Eof {
             if let Some(statement) = self.parse_statement() {

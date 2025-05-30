@@ -3,6 +3,7 @@ mod lexer;
 mod parser;
 mod token;
 use crate::lexer::Lexer;
+use crate::parser::Parser;
 use reedline::{
     DefaultPrompt, DefaultPromptSegment, ExampleHighlighter, Reedline, Signal, Vi,
     default_vi_insert_keybindings, default_vi_normal_keybindings,
@@ -33,10 +34,13 @@ fn repl() {
         match sig {
             Ok(Signal::Success(buffer)) => {
                 let mut lexer = Lexer::new(&buffer);
-                let mut token = lexer.next_token();
-                while token.token_type != TokenType::Eof {
-                    println!("{token:?}");
-                    token = lexer.next_token();
+                let mut parser = Parser::new(lexer);
+                if let Some(program) = parser.parse_program() {
+                    println!("{program}");
+                } else {
+                    for error in parser.errors {
+                        print!("{error}");
+                    }
                 }
             }
             Ok(Signal::CtrlD | Signal::CtrlC) => {
