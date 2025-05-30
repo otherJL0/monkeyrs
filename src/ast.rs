@@ -82,6 +82,18 @@ pub struct ReturnStmt {
     pub token: token::Token,
     pub return_value: Option<ExpressionStmt>,
 }
+
+impl ReturnStmt {
+    pub fn new(return_value: Option<ExpressionStmt>) -> ReturnStmt {
+        ReturnStmt {
+            token: token::Token {
+                token_type: token::TokenType::Return,
+                literal: "return".to_string(),
+            },
+            return_value,
+        }
+    }
+}
 impl fmt::Display for ReturnStmt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(

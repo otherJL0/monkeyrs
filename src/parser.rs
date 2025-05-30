@@ -61,10 +61,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_return_statement(&mut self) -> Option<Box<dyn ast::Statement>> {
-        let return_statement = ast::ReturnStmt {
-            token: self.current_token.clone(),
-            return_value: None,
-        };
+        let return_statement = ast::ReturnStmt::new(None);
         while !self.current_token.is_type(token::TokenType::Semicolon) {
             self.advance();
         }
