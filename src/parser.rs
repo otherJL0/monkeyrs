@@ -10,7 +10,8 @@ pub struct Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
-    pub fn new(mut lexer: lexer::Lexer<'a>) -> Parser<'a> {
+    pub fn new(input: &'a str) -> Parser<'a> {
+        let mut lexer = lexer::Lexer::new(input);
         let current_token = lexer.next_token();
         let peek_token = lexer.next_token();
         Parser {
@@ -99,8 +100,7 @@ mod test {
         let y = 10;
         let foobar = 3141259265;
         ";
-        let lexer = lexer::Lexer::new(&input);
-        let mut parser = Parser::new(lexer);
+        let mut parser = Parser::new(input);
         let program = parser.parse_program();
         assert!(
             parser.errors.is_empty(),
@@ -123,8 +123,7 @@ mod test {
         return 8 + 9;
         return double(5);
         ";
-        let lexer = lexer::Lexer::new(&input);
-        let mut parser = Parser::new(lexer);
+        let mut parser = Parser::new(input);
         let program = parser.parse_program();
         assert!(program.is_some(), "parser.parse_program returned None");
         assert!(

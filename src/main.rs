@@ -32,8 +32,7 @@ fn repl() {
         let sig = line_editor.read_line(&prompt);
         match sig {
             Ok(Signal::Success(buffer)) => {
-                let lexer = Lexer::new(&buffer);
-                let mut parser = Parser::new(lexer);
+                let mut parser = Parser::new(&buffer);
                 if let Some(program) = parser.parse_program() {
                     println!("{program}");
                 } else {
