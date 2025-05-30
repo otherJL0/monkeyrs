@@ -2,7 +2,6 @@ mod ast;
 mod lexer;
 mod parser;
 mod token;
-use crate::lexer::Lexer;
 use crate::parser::Parser;
 use reedline::{
     DefaultPrompt, DefaultPromptSegment, ExampleHighlighter, Reedline, Signal, Vi,
