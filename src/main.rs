@@ -8,7 +8,6 @@ use reedline::{
     DefaultPrompt, DefaultPromptSegment, ExampleHighlighter, Reedline, Signal, Vi,
     default_vi_insert_keybindings, default_vi_normal_keybindings,
 };
-use token::TokenType;
 
 fn repl() {
     let commands = vec![
@@ -33,11 +32,12 @@ fn repl() {
         let sig = line_editor.read_line(&prompt);
         match sig {
             Ok(Signal::Success(buffer)) => {
-                let mut lexer = Lexer::new(&buffer);
+                let lexer = Lexer::new(&buffer);
                 let mut parser = Parser::new(lexer);
                 if let Some(program) = parser.parse_program() {
                     println!("{program}");
                 } else {
+                    println!("Invalid statement");
                     for error in parser.errors {
                         print!("{error}");
                     }
