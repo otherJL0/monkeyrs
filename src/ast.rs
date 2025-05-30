@@ -2,7 +2,7 @@ use crate::token;
 use std::fmt;
 
 pub trait Node: fmt::Display {
-    fn token_literal(&self) -> String;
+    fn token_literal(&self) -> &str;
 }
 
 pub trait Statement: Node {}
@@ -32,8 +32,8 @@ impl fmt::Display for Identifier {
     }
 }
 impl Node for Identifier {
-    fn token_literal(&self) -> String {
-        self.value.clone()
+    fn token_literal(&self) -> &str {
+        &self.value
     }
 }
 impl Expression for Identifier {}
@@ -71,8 +71,8 @@ impl fmt::Display for LetStmt {
     }
 }
 impl Node for LetStmt {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
+    fn token_literal(&self) -> &str {
+        &self.token.literal
     }
 }
 impl Statement for LetStmt {}
@@ -95,8 +95,8 @@ impl fmt::Display for ReturnStmt {
     }
 }
 impl Node for ReturnStmt {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
+    fn token_literal(&self) -> &str {
+        &self.token.literal
     }
 }
 impl Statement for ReturnStmt {}
@@ -109,13 +109,13 @@ pub struct ExpressionStmt {
 
 impl fmt::Display for ExpressionStmt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.expression.as_ref().to_string())
+        write!(f, "{}", self.expression.as_ref())
     }
 }
 
 impl Node for ExpressionStmt {
-    fn token_literal(&self) -> String {
-        self.token.literal.clone()
+    fn token_literal(&self) -> &str {
+        &self.token.literal
     }
 }
 impl Statement for ExpressionStmt {}
@@ -135,9 +135,9 @@ impl fmt::Display for Program {
 }
 
 impl Node for Program {
-    fn token_literal(&self) -> String {
+    fn token_literal(&self) -> &str {
         if self.statements.is_empty() {
-            String::from(" ")
+            ""
         } else {
             self.statements.first().unwrap().token_literal()
         }
