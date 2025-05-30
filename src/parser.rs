@@ -39,33 +39,24 @@ impl<'a> Parser<'a> {
     }
 
     fn advance(&mut self) {
-        self.current_token = self.peek_token.clone();
-        self.peek_token = self.lexer.next_token();
+        self.current_token = std::mem::replace(&mut self.peek_token, self.lexer.next_token());
     }
 
     fn parse_let_statement(&mut self) -> Option<Box<dyn ast::Statement>> {
         if !self.peek_token.is_type(token::TokenType::Identifier) {
             return None;
         }
-        let token = self.current_token.clone();
         if !self.expect_peek(token::TokenType::Identifier) {
             return None;
         }
-        let name = ast::Identifier {
-            token: self.current_token.clone(),
-            value: self.current_token.literal.clone(),
-        };
+        let name = ast::Identifier::new(&self.current_token.literal);
         if !self.expect_peek(token::TokenType::Assign) {
             return None;
         }
         while !self.current_token.is_type(token::TokenType::Semicolon) {
             self.advance();
         }
-        let statement = ast::LetStmt {
-            token,
-            name,
-            value: None,
-        };
+        let statement = ast::LetStmt::new(name, None);
         Some(Box::new(statement))
     }
 

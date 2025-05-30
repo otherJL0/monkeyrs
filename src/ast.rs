@@ -15,13 +15,13 @@ pub struct Identifier {
 }
 
 impl Identifier {
-    pub fn new(value: String) -> Identifier {
+    pub fn new(value: &str) -> Identifier {
         Identifier {
             token: token::Token {
                 token_type: token::TokenType::Identifier,
-                literal: value.clone(),
+                literal: value.to_string(),
             },
-            value,
+            value: value.to_string(),
         }
     }
 }
@@ -152,8 +152,8 @@ mod test {
     fn test_to_string() {
         let program = Program {
             statements: vec![Box::new(LetStmt::new(
-                Identifier::new("myVar".to_string()),
-                Some(Box::new(Identifier::new("anotherVar".to_string()))),
+                Identifier::new("myVar"),
+                Some(Box::new(Identifier::new("anotherVar"))),
             ))],
         };
         assert_eq!(program.to_string(), "let myVar = anotherVar;");
