@@ -1,12 +1,20 @@
+use std::collections::HashMap;
+
 use crate::ast;
 use crate::lexer;
 use crate::token;
 
+pub type prefix_parse_fn = fn() -> Box<dyn ast::Expression>;
+pub type infix_parse_fn = fn(Box<dyn ast::Expression>) -> Box<ast::Expression>;
+
+#[derive(Default)]
 pub struct Parser<'a> {
     lexer: lexer::Lexer<'a>,
     current_token: token::Token,
     peek_token: token::Token,
     pub errors: Vec<String>,
+    prefix_parse_fns: HashMap<token::TokenType, prefix_parse_fn>,
+    infix_parse_fns: HashMap<token::TokenType, infix_parse_fn>,
 }
 
 impl<'a> Parser<'a> {
@@ -19,7 +27,16 @@ impl<'a> Parser<'a> {
             current_token,
             peek_token,
             errors: vec![],
+            prefix_parse_fns: HashMap::new(),
+            infix_parse_fns: HashMap::new(),
         }
+    }
+    fn register_prefix(&mut self, token_type: token::TokenType, function: prefix_parse_fn) {
+        self.prefix_parse_fns.insert(token_type, function);
+    }
+
+    fn register_infix(&mut self, token_type: token::TokenType, function: infix_parse_fn) {
+        self.infix_parse_fns.insert(token_type, function);
     }
 
     fn expect_peek(&mut self, token_type: token::TokenType) -> bool {
