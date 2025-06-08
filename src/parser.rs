@@ -4,8 +4,8 @@ use crate::ast;
 use crate::lexer;
 use crate::token;
 
-pub type PrefixParseFn = fn() -> Box<dyn ast::Expression>;
-pub type InfixParseFn = fn(Box<dyn ast::Expression>) -> Box<dyn ast::Expression>;
+pub type PrefixParseFn = fn(&mut Parser) -> Box<dyn ast::Expression>;
+pub type InfixParseFn = fn(&mut Parser, Box<dyn ast::Expression>) -> Box<dyn ast::Expression>;
 
 pub struct Parser<'a> {
     lexer: lexer::Lexer<'a>,
