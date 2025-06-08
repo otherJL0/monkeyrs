@@ -4,8 +4,8 @@ use crate::ast;
 use crate::lexer;
 use crate::token;
 
-pub type PrefixParseFn = fn(&mut Parser) -> Box<dyn ast::Expression>;
-pub type InfixParseFn = fn(&mut Parser, Box<dyn ast::Expression>) -> Box<dyn ast::Expression>;
+pub type PrefixParseFn = fn(&mut Parser) -> ast::Expression;
+pub type InfixParseFn = fn(&mut Parser, ast::Expression) -> ast::Expression;
 
 pub struct Parser<'a> {
     lexer: lexer::Lexer<'a>,
@@ -59,7 +59,7 @@ impl<'a> Parser<'a> {
         self.current_token = std::mem::replace(&mut self.peek_token, self.lexer.next_token());
     }
 
-    fn parse_let_statement(&mut self) -> Option<Box<dyn ast::Statement>> {
+    fn parse_let_statement(&mut self) -> Option<ast::LetStmt> {
         if !self.peek_token.is_type(token::TokenType::Identifier) {
             return None;
         }
@@ -74,21 +74,25 @@ impl<'a> Parser<'a> {
             self.advance();
         }
         let statement = ast::LetStmt::new(name, None);
-        Some(Box::new(statement))
+        Some(statement)
     }
 
-    fn parse_return_statement(&mut self) -> Option<Box<dyn ast::Statement>> {
+    fn parse_return_statement(&mut self) -> Option<ast::ReturnStmt> {
         let return_statement = ast::ReturnStmt::new(None);
         while !self.current_token.is_type(token::TokenType::Semicolon) {
             self.advance();
         }
-        Some(Box::new(return_statement))
+        Some(return_statement)
     }
 
-    fn parse_statement(&mut self) -> Option<Box<dyn ast::Statement>> {
+    fn parse_statement(&mut self) -> Option<ast::Statement> {
         match self.current_token.token_type {
-            token::TokenType::Let => self.parse_let_statement(),
-            token::TokenType::Return => self.parse_return_statement(),
+            token::TokenType::Let => self
+                .parse_let_statement()
+                .map(|stmt| ast::Statement::LetStmt(stmt)),
+            token::TokenType::Return => self
+                .parse_return_statement()
+                .map(|stmt| ast::Statement::ReturnStmt(stmt)),
             _ => None,
         }
     }
@@ -146,5 +150,13 @@ mod test {
             program.unwrap().statements.len() == 3,
             "expected 3 statements"
         );
+    }
+
+    #[test]
+    fn test_identifier_statement() {
+        let input = "foobar;";
+        let mut parser = Parser::new(input);
+        let program = parser.parse_program().unwrap();
+        let stmt = program.statements.first().unwrap();
     }
 }

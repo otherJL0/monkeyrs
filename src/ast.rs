@@ -1,12 +1,49 @@
 use crate::token;
 use std::fmt;
 
-pub trait Node: fmt::Display {
+pub trait Node: fmt::Display + fmt::Debug {
     fn token_literal(&self) -> &str;
 }
 
-pub trait Statement: Node {}
-pub trait Expression: Node + fmt::Debug {}
+// pub trait Statement: Node {}
+// pub trait Expression: Node + fmt::Debug {}
+#[derive(Debug)]
+pub enum Expression {
+    Identifier(Identifier),
+}
+
+impl fmt::Display for Expression {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Expression::Identifier(expr) => expr,
+            }
+        )
+    }
+}
+
+#[derive(Debug)]
+pub enum Statement {
+    LetStmt(LetStmt),
+    ReturnStmt(ReturnStmt),
+    ExpressionStmt(ExpressionStmt),
+}
+
+impl fmt::Display for Statement {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Statement::LetStmt(let_stmt) => let_stmt.to_string(),
+                Statement::ReturnStmt(return_stmt) => return_stmt.to_string(),
+                Statement::ExpressionStmt(expression_stmt) => expression_stmt.to_string(),
+            }
+        )
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct Identifier {
@@ -36,16 +73,15 @@ impl Node for Identifier {
         &self.value
     }
 }
-impl Expression for Identifier {}
 
 #[derive(Debug)]
 pub struct LetStmt {
     pub token: token::Token,
     pub name: Identifier,
-    pub value: Option<Box<dyn Expression>>,
+    pub value: Option<Expression>,
 }
 impl LetStmt {
-    pub fn new(identifier: Identifier, value: Option<Box<dyn Expression>>) -> LetStmt {
+    pub fn new(identifier: Identifier, value: Option<Expression>) -> LetStmt {
         LetStmt {
             token: token::Token {
                 token_type: token::TokenType::Let,
@@ -75,7 +111,6 @@ impl Node for LetStmt {
         &self.token.literal
     }
 }
-impl Statement for LetStmt {}
 
 #[derive(Debug)]
 pub struct ReturnStmt {
@@ -111,17 +146,16 @@ impl Node for ReturnStmt {
         &self.token.literal
     }
 }
-impl Statement for ReturnStmt {}
 
 #[derive(Debug)]
 pub struct ExpressionStmt {
     token: token::Token,
-    expression: Box<dyn Expression>,
+    expression: Expression,
 }
 
 impl fmt::Display for ExpressionStmt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.expression.as_ref())
+        write!(f, "{}", self.expression)
     }
 }
 
@@ -130,11 +164,10 @@ impl Node for ExpressionStmt {
         &self.token.literal
     }
 }
-impl Statement for ExpressionStmt {}
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Program {
-    pub statements: Vec<Box<dyn Statement>>,
+    pub statements: Vec<Statement>,
 }
 impl fmt::Display for Program {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -148,10 +181,16 @@ impl fmt::Display for Program {
 
 impl Node for Program {
     fn token_literal(&self) -> &str {
-        if self.statements.is_empty() {
-            ""
+        if let Some(stmt) = self.statements.first() {
+            match stmt {
+                Statement::LetStmt(let_stmt) => &let_stmt.token,
+                Statement::ReturnStmt(return_stmt) => &return_stmt.token,
+                Statement::ExpressionStmt(expression_stmt) => &expression_stmt.token,
+            }
+            .literal
+            .as_str()
         } else {
-            self.statements.first().unwrap().token_literal()
+            ""
         }
     }
 }
@@ -163,9 +202,9 @@ mod test {
     #[test]
     fn test_to_string() {
         let program = Program {
-            statements: vec![Box::new(LetStmt::new(
+            statements: vec![Statement::LetStmt(LetStmt::new(
                 Identifier::new("myVar"),
-                Some(Box::new(Identifier::new("anotherVar"))),
+                Some(Expression::Identifier(Identifier::new("anotherVar"))),
             ))],
         };
         assert_eq!(program.to_string(), "let myVar = anotherVar;");
