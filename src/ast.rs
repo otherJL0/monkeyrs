@@ -107,8 +107,8 @@ impl Node for IntegerLiteral {
 
 #[derive(Debug, Clone)]
 pub struct Boolean {
-    token: token::Token,
-    value: bool,
+    pub token: token::Token,
+    pub value: bool,
 }
 
 impl Boolean {

@@ -119,7 +119,7 @@ impl<'a> Parser<'a> {
         ast::Expression::IntegerLiteral(ast::IntegerLiteral::new(&self.current_token))
     }
     fn parse_boolean(&mut self) -> ast::Expression {
-        todo!()
+        ast::Expression::Boolean(ast::Boolean::new(&self.current_token))
     }
     fn parse_prefix_expression(&mut self) -> ast::Expression {
         todo!()
@@ -186,23 +186,20 @@ impl<'a> Parser<'a> {
         match *prefix {
             PrefixParser::Identifier => Some(self.parse_identifier()),
             PrefixParser::Integer => Some(self.parse_integer_literal()),
+            PrefixParser::Boolean => Some(self.parse_boolean()),
             _ => None,
         }
     }
 
     fn parse_expression_statement(&mut self) -> Option<ast::ExpressionStmt> {
-        let expression_stmt = if let Some(expression) = self.parse_expression() {
+        if let Some(expression) = self.parse_expression() {
             Some(ast::ExpressionStmt {
                 token: self.current_token.clone(),
                 expression,
             })
         } else {
             None
-        };
-        if self.expect_peek(TokenType::Semicolon) {
-            self.advance();
         }
-        expression_stmt
     }
 
     fn parse_statement(&mut self) -> Option<ast::Statement> {
@@ -306,7 +303,45 @@ mod test {
                 if let ast::Expression::IntegerLiteral(integer_literal) = &expr.expression {
                     assert_eq!(integer_literal.value, 5);
                 } else {
-                    panic!("Expected foobar")
+                    panic!("Expected 5")
+                }
+            } else {
+                panic!("Expected ExpressionStatement")
+            }
+        } else {
+            panic!("Expected statement, got None")
+        }
+    }
+
+    #[test]
+    fn test_boolean() {
+        let input = "
+        true;
+        false;
+        ";
+        let mut parser = Parser::new(input);
+        let program = parser.parse_program().unwrap();
+        assert_eq!(program.statements.len(), 2,);
+        let mut statements = program.statements.iter();
+        if let Some(statement) = statements.next() {
+            if let ast::Statement::ExpressionStmt(expr) = statement {
+                if let ast::Expression::Boolean(boolean) = &expr.expression {
+                    assert_eq!(boolean.value, true);
+                } else {
+                    panic!("Expected true")
+                }
+            } else {
+                panic!("Expected ExpressionStatement")
+            }
+        } else {
+            panic!("Expected statement, got None")
+        }
+        if let Some(statement) = statements.next() {
+            if let ast::Statement::ExpressionStmt(expr) = statement {
+                if let ast::Expression::Boolean(boolean) = &expr.expression {
+                    assert_eq!(boolean.value, false);
+                } else {
+                    panic!("Expected false")
                 }
             } else {
                 panic!("Expected ExpressionStatement")
