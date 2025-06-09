@@ -149,8 +149,8 @@ impl Node for ReturnStmt {
 
 #[derive(Debug)]
 pub struct ExpressionStmt {
-    token: token::Token,
-    expression: Expression,
+    pub token: token::Token,
+    pub expression: Expression,
 }
 
 impl fmt::Display for ExpressionStmt {

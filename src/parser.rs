@@ -4,6 +4,7 @@ use crate::ast;
 use crate::lexer;
 use crate::token::{Token, TokenType};
 
+#[derive(Copy, Clone)]
 enum Precedence {
     Lowest = 1,
     Equals,
@@ -14,6 +15,7 @@ enum Precedence {
     Call,
 }
 
+#[derive(Copy, Clone)]
 enum PrefixParser {
     Identifier,
     Integer,
@@ -24,6 +26,7 @@ enum PrefixParser {
     Function,
 }
 
+#[derive(Copy, Clone)]
 enum InfixParser {
     Plus,
     Minus,
@@ -178,16 +181,27 @@ impl<'a> Parser<'a> {
         Some(return_statement)
     }
 
-    fn parse_expression(&mut self, precedence: Precedence) -> Option<ast::Expression> {
-        None
+    fn parse_expression(&mut self) -> Option<ast::Expression> {
+        let prefix = self.prefix_parse_fns.get(&self.current_token.token_type)?;
+        match *prefix {
+            PrefixParser::Identifier => Some(self.parse_identifier()),
+            _ => None,
+        }
     }
 
     fn parse_expression_statement(&mut self) -> Option<ast::ExpressionStmt> {
-        let expression = self.parse_expression(Precedence::Lowest);
+        let expression_stmt = if let Some(expression) = self.parse_expression() {
+            Some(ast::ExpressionStmt {
+                token: self.current_token.clone(),
+                expression,
+            })
+        } else {
+            None
+        };
         if self.expect_peek(TokenType::Semicolon) {
             self.advance();
         }
-        None
+        expression_stmt
     }
 
     fn parse_statement(&mut self) -> Option<ast::Statement> {
@@ -264,6 +278,19 @@ mod test {
         let input = "foobar;";
         let mut parser = Parser::new(input);
         let program = parser.parse_program().unwrap();
-        let stmt = program.statements.first().unwrap();
+        assert_eq!(program.statements.len(), 1,);
+        if let Some(statement) = program.statements.first() {
+            if let ast::Statement::ExpressionStmt(expr) = statement {
+                if let ast::Expression::Identifier(identifier) = &expr.expression {
+                    assert_eq!(identifier.value, "foobar");
+                } else {
+                    panic!("Expected foobar")
+                }
+            } else {
+                panic!("Expected ExpressionStatement")
+            }
+        } else {
+            panic!("Expected statement, got None")
+        }
     }
 }
