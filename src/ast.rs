@@ -83,11 +83,11 @@ pub struct IntegerLiteral {
 }
 
 impl IntegerLiteral {
-    pub fn new(token: token::Token) -> IntegerLiteral {
-        let value = &token.literal.parse::<i64>().unwrap();
+    pub fn new(token: &token::Token) -> IntegerLiteral {
+        let value = token.literal.parse::<i64>().unwrap();
         IntegerLiteral {
-            token,
-            value: value.clone(),
+            token: token.clone(),
+            value,
         }
     }
 }

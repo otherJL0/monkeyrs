@@ -102,7 +102,7 @@ impl<'a> Parser<'a> {
     fn parse_prefix(&mut self, parser_type: PrefixParser) -> ast::Expression {
         match parser_type {
             PrefixParser::Identifier => self.parse_identifier(),
-            PrefixParser::Integer => self.parse_integer(),
+            PrefixParser::Integer => self.parse_integer_literal(),
             PrefixParser::Boolean => self.parse_boolean(),
             PrefixParser::Prefix => self.parse_prefix_expression(),
             PrefixParser::Grouped => self.parse_grouped_expression(),
@@ -115,8 +115,8 @@ impl<'a> Parser<'a> {
         ast::Expression::Identifier(ast::Identifier::new(&self.current_token.literal))
     }
 
-    fn parse_integer(&mut self) -> ast::Expression {
-        todo!()
+    fn parse_integer_literal(&mut self) -> ast::Expression {
+        ast::Expression::IntegerLiteral(ast::IntegerLiteral::new(&self.current_token))
     }
     fn parse_boolean(&mut self) -> ast::Expression {
         todo!()
@@ -185,6 +185,7 @@ impl<'a> Parser<'a> {
         let prefix = self.prefix_parse_fns.get(&self.current_token.token_type)?;
         match *prefix {
             PrefixParser::Identifier => Some(self.parse_identifier()),
+            PrefixParser::Integer => Some(self.parse_integer_literal()),
             _ => None,
         }
     }
@@ -302,8 +303,8 @@ mod test {
         assert_eq!(program.statements.len(), 1,);
         if let Some(statement) = program.statements.first() {
             if let ast::Statement::ExpressionStmt(expr) = statement {
-                if let ast::Expression::Identifier(identifier) = &expr.expression {
-                    assert_eq!(identifier.value, "foobar");
+                if let ast::Expression::IntegerLiteral(integer_literal) = &expr.expression {
+                    assert_eq!(integer_literal.value, 5);
                 } else {
                     panic!("Expected foobar")
                 }
