@@ -11,6 +11,7 @@ pub trait Node: fmt::Display + fmt::Debug {
 pub enum Expression {
     Identifier(Identifier),
     IntegerLiteral(IntegerLiteral),
+    Boolean(Boolean),
 }
 
 impl fmt::Display for Expression {
@@ -21,6 +22,7 @@ impl fmt::Display for Expression {
             match self {
                 Expression::Identifier(expr) => expr.to_string(),
                 Expression::IntegerLiteral(integer) => integer.to_string(),
+                Expression::Boolean(boolean) => boolean.to_string(),
             }
         )
     }
@@ -98,6 +100,36 @@ impl fmt::Display for IntegerLiteral {
     }
 }
 impl Node for IntegerLiteral {
+    fn token_literal(&self) -> &str {
+        &self.token.literal
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Boolean {
+    token: token::Token,
+    value: bool,
+}
+
+impl Boolean {
+    pub fn new(token: &token::Token) -> Boolean {
+        Boolean {
+            token: token.clone(),
+            value: match token.token_type {
+                token::TokenType::True => true,
+                token::TokenType::False => false,
+                _ => unreachable!("Only True or False should be possible"),
+            },
+        }
+    }
+}
+
+impl fmt::Display for Boolean {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.value)
+    }
+}
+impl Node for Boolean {
     fn token_literal(&self) -> &str {
         &self.token.literal
     }
