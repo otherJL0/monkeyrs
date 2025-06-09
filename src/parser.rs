@@ -293,4 +293,25 @@ mod test {
             panic!("Expected statement, got None")
         }
     }
+
+    #[test]
+    fn test_integer_literals() {
+        let input = "5;";
+        let mut parser = Parser::new(input);
+        let program = parser.parse_program().unwrap();
+        assert_eq!(program.statements.len(), 1,);
+        if let Some(statement) = program.statements.first() {
+            if let ast::Statement::ExpressionStmt(expr) = statement {
+                if let ast::Expression::Identifier(identifier) = &expr.expression {
+                    assert_eq!(identifier.value, "foobar");
+                } else {
+                    panic!("Expected foobar")
+                }
+            } else {
+                panic!("Expected ExpressionStatement")
+            }
+        } else {
+            panic!("Expected statement, got None")
+        }
+    }
 }

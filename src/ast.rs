@@ -10,6 +10,7 @@ pub trait Node: fmt::Display + fmt::Debug {
 #[derive(Debug)]
 pub enum Expression {
     Identifier(Identifier),
+    IntegerLiteral(IntegerLiteral),
 }
 
 impl fmt::Display for Expression {
@@ -18,7 +19,8 @@ impl fmt::Display for Expression {
             f,
             "{}",
             match self {
-                Expression::Identifier(expr) => expr,
+                Expression::Identifier(expr) => expr.to_string(),
+                Expression::IntegerLiteral(integer) => integer.to_string(),
             }
         )
     }
@@ -71,6 +73,33 @@ impl fmt::Display for Identifier {
 impl Node for Identifier {
     fn token_literal(&self) -> &str {
         &self.value
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct IntegerLiteral {
+    pub token: token::Token,
+    pub value: i64,
+}
+
+impl IntegerLiteral {
+    pub fn new(token: token::Token) -> IntegerLiteral {
+        let value = &token.literal.parse::<i64>().unwrap();
+        IntegerLiteral {
+            token,
+            value: value.clone(),
+        }
+    }
+}
+
+impl fmt::Display for IntegerLiteral {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.value)
+    }
+}
+impl Node for IntegerLiteral {
+    fn token_literal(&self) -> &str {
+        &self.token.literal
     }
 }
 
