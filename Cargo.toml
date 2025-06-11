@@ -16,4 +16,5 @@ pedantic = { level = "warn", priority = -1 }
 style = { level = "warn", priority = -1 }
 
 [dependencies]
+ast-derive = { version = "0.1.0", path = "ast-derive" }
 reedline = "0.40.0"
