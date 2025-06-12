@@ -122,7 +122,13 @@ impl<'a> Parser<'a> {
         ast::Expression::Boolean(ast::Boolean::new(&self.current_token))
     }
     fn parse_prefix_expression(&mut self) -> ast::Expression {
-        todo!()
+        let prefix_token = self.current_token.clone();
+        self.advance();
+        let expression = self.parse_expression().unwrap();
+        ast::Expression::PrefixExpression(ast::PrefixExpression::new(
+            prefix_token,
+            Box::new(expression),
+        ))
     }
     fn parse_grouped_expression(&mut self) -> ast::Expression {
         todo!()
@@ -187,6 +193,7 @@ impl<'a> Parser<'a> {
             PrefixParser::Identifier => Some(self.parse_identifier()),
             PrefixParser::Integer => Some(self.parse_integer_literal()),
             PrefixParser::Boolean => Some(self.parse_boolean()),
+            PrefixParser::Prefix => Some(self.parse_prefix_expression()),
             _ => None,
         }
     }
@@ -348,6 +355,16 @@ mod test {
             }
         } else {
             panic!("Expected statement, got None")
+        }
+    }
+
+    #[test]
+    fn test_prefix_expression() {
+        let test_cases = [("!5", "!", 5), ("-15", "-", 15)];
+        for (input, operator, integer_value) in test_cases {
+            let mut parser = Parser::new(input);
+            let statements = parser.parse_program().unwrap().statements;
+            assert_eq!(statements.len(), 1);
         }
     }
 }

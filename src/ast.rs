@@ -7,11 +7,12 @@ pub trait Node: fmt::Display + fmt::Debug {
 
 // pub trait Statement: Node {}
 // pub trait Expression: Node + fmt::Debug {}
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Expression {
     Identifier(Identifier),
     IntegerLiteral(IntegerLiteral),
     Boolean(Boolean),
+    PrefixExpression(PrefixExpression),
 }
 
 impl fmt::Display for Expression {
@@ -23,6 +24,7 @@ impl fmt::Display for Expression {
                 Expression::Identifier(expr) => expr.to_string(),
                 Expression::IntegerLiteral(integer) => integer.to_string(),
                 Expression::Boolean(boolean) => boolean.to_string(),
+                Expression::PrefixExpression(prefix_expression) => prefix_expression.to_string(),
             }
         )
     }
@@ -130,6 +132,35 @@ impl fmt::Display for Boolean {
     }
 }
 impl Node for Boolean {
+    fn token_literal(&self) -> &str {
+        &self.token.literal
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct PrefixExpression {
+    token: token::Token,
+    operator: String,
+    right: Box<Expression>,
+}
+
+impl PrefixExpression {
+    pub fn new(token: token::Token, expression: Box<Expression>) -> PrefixExpression {
+        PrefixExpression {
+            right: expression,
+            token: token.clone(),
+            operator: token.literal,
+        }
+    }
+}
+
+impl fmt::Display for PrefixExpression {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "({}{})", self.operator, self.right.to_string())
+    }
+}
+
+impl Node for PrefixExpression {
     fn token_literal(&self) -> &str {
         &self.token.literal
     }
